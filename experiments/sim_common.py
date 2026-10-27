@@ -7,8 +7,10 @@ Same as common.py:
 Differences, specific to the simulation:
   * the first 30 s are dropped (start-up transient from calm water, run_one.m starts at rest) and the
     last 5 s (decimation edge), so each run has T = 2826 samples at 5 Hz and 486 forecast origins,
-  * train/test split is the fixed `split` column of the design matrix (no leave-one-run-out):
-    train (1440 runs), test_id (576, rep 3), test_ood_Hs (630, Hs = 0.40 m), test_ood_beta (504, beta = 45 deg).
+  * evaluation protocol (a), chosen 27/10/2026: 6-fold cross-validation grouped by wave realization (seed), with
+    rolling-origin evaluation inside each test run (cv_split), plus two out-of-distribution tests (ood_split):
+    Hs = 0.40 m held out, beta = 45 deg held out. Fold assignment: folds.csv (experiments/make_folds.py).
+    The older fixed `split` column (train 1440, test_id 576, test_ood_Hs 630, test_ood_beta 504) is kept for load(split=...).
 Channels: heave_m = D (NED, positive DOWN), roll_deg, pitch_deg. Other columns of the CSV
 (zeta, tau_w1..6, N, E, psi, u..r, tauX, tauN) are kept, in the units of run_one.m (rad for angles).
 
@@ -80,6 +82,35 @@ def motion(X):
 def origins(n):
     """Forecast origin indices: forecast uses x[:o] and predicts x[o:o+HORIZON] (as common.py)."""
     return np.arange(MAX_CONTEXT, n - HORIZON + 1, STRIDE)
+
+
+# ---------------------------------------------------------------- evaluation protocol (a): grouped 6-fold CV + OOD
+K_FOLDS = 6
+OOD = {"Hs": ("Hs", 0.40), "beta": ("beta_deg", 45)}
+
+
+def _folds_of(meta):
+    f = pd.read_csv(os.path.join(SIM, "folds.csv"))[["id", "fold"]]
+    return meta[["id"]].merge(f, on="id", how="left").fold.to_numpy()
+
+
+def cv_split(meta, k):
+    """Row indices into meta for fold k: test = fold k, val = fold (k + 1) mod 6, train = the other four folds.
+    Folds are groups of whole wave realizations (seeds), so no sea appears on two sides."""
+    fold = _folds_of(meta)
+    test, val = k % K_FOLDS, (k + 1) % K_FOLDS
+    return dict(train=np.nonzero((fold != test) & (fold != val))[0],
+                val=np.nonzero(fold == val)[0], test=np.nonzero(fold == test)[0])
+
+
+def ood_split(meta, which):
+    """which = 'Hs' (test: Hs = 0.40 m) or 'beta' (test: beta = 45 deg). The held-out level is absent from train and
+    val; val = the remaining runs of fold 0, train = the remaining runs of folds 1-5."""
+    col, level = OOD[which]
+    held = np.isclose(meta[col].to_numpy(float), level)
+    fold = _folds_of(meta)
+    return dict(train=np.nonzero(~held & (fold != 0))[0], val=np.nonzero(~held & (fold == 0))[0],
+                test=np.nonzero(held)[0])
 
 
 if __name__ == "__main__":
