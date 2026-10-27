@@ -48,10 +48,10 @@ Không cần MATLAB, không cần Capytaine.
 
 ```bash
 cd D:/USV-landing-prediction
-sha256sum -c sim/reproduce_v2/code_sha256.txt
+python sim/checksums.py code-check sim/reproduce_v2/code_sha256.txt
 ```
 
-Mọi dòng phải báo `OK`. Dòng nào báo `FAILED` là file code đó đã khác bản dùng để tạo dữ liệu.
+Dòng cuối phải là `all code files match`. File nào báo `FAILED` là code đó đã khác bản dùng để tạo dữ liệu. Phép kiểm tra bỏ qua kiểu xuống dòng (Windows/Linux), nên đúng với mọi cách clone.
 
 ## Bước 3. Chép đúng hệ số tàu và bộ nhớ chất lỏng
 
