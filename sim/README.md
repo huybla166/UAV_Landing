@@ -1,5 +1,7 @@
 # sim/ — tạo dữ liệu sóng → lực → chuyển động 6 DOF bằng MSS (Octave/MATLAB)
 
+**Tạo lại bộ dữ liệu dataset_v2 từng bước: [reproduce_v2/REPRODUCE.md](reproduce_v2/REPRODUCE.md).** Phần dưới đây là cách chạy thử một lần mô phỏng.
+
 Không dùng GUI. Chuỗi gọi giống `SIMhydroVessel.m` của MSS 2.0:
 `hydroVesselConfig → load vessel → waveInitialization → computeManeuveringModel → [headingAutopilot + waveForceRAO + rk4(@hydroVessel)]`.
 
