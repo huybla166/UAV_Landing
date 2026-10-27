@@ -144,19 +144,27 @@ def waves(vessel):
     return _WAVES[vessel]
 
 
-def seakeeping_frame(x, U_ref):
-    """posS (n,2), psiS (n,) of sim/run_one.m rebuilt from the logged psi, u, v (row i -> frame used for row i)."""
+def seakeeping_frame(x, U_ref, h=H):
+    """posS (n,2), psiS (n,) of sim/run_one.m rebuilt from the logged psi, u, v (row i -> frame used for row i).
+    The frame is updated every integration step h; when h is finer than the log step H (dataset_v2: h = 0.025 s,
+    logged every 0.05 s), psi, u, v at the unlogged steps are interpolated with cubic splines."""
     n = len(x)
+    m = int(round(H / h))
     psi, u, v = x[:, 13], x[:, 14], x[:, 15]
+    if m > 1:
+        from scipy.interpolate import CubicSpline
+        tf = h * np.arange((n - 1) * m)
+        psi, u, v = (CubicSpline(x[:, 0], y)(tf) for y in (np.unwrap(psi), u, v))
     vbar = np.array([U_ref, 0.0]); pos = np.zeros(2); ps = 0.0
     posS, psiS = np.zeros((n, 2)), np.zeros(n)
-    for i in range(n - 1):
-        vN = np.cos(psi[i]) * u[i] - np.sin(psi[i]) * v[i]
-        vE = np.sin(psi[i]) * u[i] + np.cos(psi[i]) * v[i]
-        vbar = vbar + (H / T_LP) * (np.array([vN, vE]) - vbar)
-        pos = pos + H * vbar
-        ps = ps + (H / T_LP) * ((psi[i] - ps + np.pi) % (2 * np.pi) - np.pi)
-        posS[i + 1], psiS[i + 1] = pos, ps
+    for k in range((n - 1) * m):
+        vN = np.cos(psi[k]) * u[k] - np.sin(psi[k]) * v[k]
+        vE = np.sin(psi[k]) * u[k] + np.cos(psi[k]) * v[k]
+        vbar = vbar + (h / T_LP) * (np.array([vN, vE]) - vbar)
+        pos = pos + h * vbar
+        ps = ps + (h / T_LP) * ((psi[k] - ps + np.pi) % (2 * np.pi) - np.pi)
+        if (k + 1) % m == 0:
+            posS[(k + 1) // m], psiS[(k + 1) // m] = pos, ps
     return posS, psiS
 
 
@@ -193,7 +201,8 @@ def _forces(args):
         if int(row.seed) not in W:
             return dict(id=rid, name=row["name"], skipped="no wave model")
         x = read_run(row["name"])
-        posS, psiS = seakeeping_frame(x, row.U)
+        h = float(json.load(open(os.path.join(RUNS, row["name"] + "_coef.json")))["run"]["h"])
+        posS, psiS = seakeeping_frame(x, row.U, h)
         z, tau = wave_loads(x[:, 0], W[int(row.seed)], angles, g, posS, psiS, np.radians(row.beta_deg))
         out = dict(id=rid, name=row["name"], skipped="")
         out["zeta"] = np.abs(z - x[:, 1]).max() / x[:, 1].std()

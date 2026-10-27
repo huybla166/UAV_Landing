@@ -18,20 +18,22 @@ Dự án gồm ba phần:
 |---|---|
 | [`sim/`](sim/) | Mô phỏng sóng → lực sóng → chuyển động 6 bậc tự do (Octave + MSS 2.0, có bản chạy GPU bằng PyTorch). Hướng dẫn chi tiết: [sim/README.md](sim/README.md) |
 | [`experiments/`](experiments/) | Mô hình dự đoán, thí nghiệm cửa sổ hạ cánh. `experiments/pinn/` chứa phương trình chuyển động dạng khả vi cho PINN |
-| [`analysis/`](analysis/) | Kiểm chứng bộ mô phỏng và hình phân tích |
+| [`analysis/`](analysis/) | Xử lý dữ liệu thật NTUA, kiểm chứng bộ mô phỏng, hình phân tích |
 | [`results/`](results/) | Tóm tắt kết quả (`*.md`, `*.json`) và log chạy. Bắt đầu đọc từ [results/summary.md](results/summary.md) |
 | [`Trinh_bay/`](Trinh_bay/) | Hình dùng khi trình bày |
 
 ## Dữ liệu
 
-Dữ liệu **không có trong repo** vì quá lớn (khoảng 19 GB). Code đọc dữ liệu từ thư mục `data/`:
+Dữ liệu **không có trong repo** vì quá lớn (gần 20 GB). Code đọc dữ liệu từ thư mục `data/`:
 
 | Bộ dữ liệu | Mô tả | Đặt ở |
 |---|---|---|
 | **dataset_v2** (mô phỏng) | 3150 lần chạy, mỗi lần 600 s, ghi 20 Hz. Tàu Otter 55 kg và 80 kg; Hs 0,10–0,50 m; hướng sóng 0–180°; tốc độ 0–2 m/s. Mỗi lần chạy có 1 file CSV chuyển động và 1 file JSON hệ số phương trình chuyển động | `data/sim/dataset_v2/` |
-| **NTUA/UiT** (đo thật) | Thử nghiệm ngoài biển với mô hình tàu tự hành, công khai tại DataverseNO, [DOI 10.18710/VXGPII](https://doi.org/10.18710/VXGPII). Xử lý bằng `analysis/analyze_vxgpii.py` | `data/processed/` |
+| **dataset_v1** (mô phỏng, bản cũ) | Cùng ma trận thí nghiệm với v2, chỉ dùng cho test PINN | `data/sim/dataset_v1/` |
+| **NTUA/UiT** (đo thật) | Thử nghiệm ngoài biển gần Athens (Hy Lạp) với mô hình tàu dài 10–12 m, công khai tại DataverseNO: [DOI 10.18710/VXGPII](https://doi.org/10.18710/VXGPII) | Tải về và giải nén vào `data/VXGPII/` (có hai thư mục `with_dynamic_wing/`, `without_dynamic_wing/`) |
 
-Cần dataset_v2 thì liên hệ tác giả. Có thể tự sinh lại bằng code trong `sim/`, nhưng mất nhiều giờ chạy.
+Cần dataset_v1/v2 thì liên hệ tác giả. Có thể tự sinh lại bằng code trong `sim/` (bắt đầu từ
+`sim/make_design_matrix.py`), nhưng mất nhiều giờ chạy.
 
 ## Cài đặt
 
@@ -46,12 +48,28 @@ pip install numpy scipy pandas matplotlib torch einops tirex-ts pytest
 
 ## Chạy thử
 
+Chạy theo đúng thứ tự, vì bước sau dùng kết quả của bước trước. Kết quả thí nghiệm ghi vào `results/`.
+
+**Dữ liệu thật NTUA** (cần `data/VXGPII/`):
+
 ```bash
-python sim/make_design_matrix.py               # tạo ma trận thí nghiệm sim/design_matrix.csv
-python experiments/run_sim_baselines.py        # mô hình cơ sở (mean, AR, LSTM) trên dữ liệu mô phỏng
-python experiments/run_baselines.py            # mô hình cơ sở trên dữ liệu thật NTUA
+python analysis/analyze_vxgpii.py              # xử lý dữ liệu thô -> data/processed/
+python experiments/run_baselines.py            # mô hình cơ sở: mean, persistence, AR, LSTM của bài gốc
+python experiments/run_tirex.py                # TiRex zero-shot (lần đầu tự tải mô hình NX-AI/TiRex)
 python experiments/run_conformal_windows.py    # cửa sổ hạ cánh có hiệu chỉnh conformal
-pytest experiments/pinn                        # kiểm tra phương trình chuyển động của PINN
+```
+
+**Dữ liệu mô phỏng** (cần `data/sim/dataset_v2/`):
+
+```bash
+python experiments/sim_common.py               # tạo cache 5 Hz, chỉ cần chạy 1 lần
+python experiments/run_sim_baselines.py        # mô hình cơ sở trên dữ liệu mô phỏng
+```
+
+**Test phương trình chuyển động của PINN** (cần `data/sim/dataset_v1/`, thiếu thì test tự bỏ qua):
+
+```bash
+pytest experiments/pinn
 ```
 
 ## Giấy phép

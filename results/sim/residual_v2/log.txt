@@ -39,3 +39,393 @@
 390/3150 runs, 283 s
 400/3150 runs, 289 s
 410/3150 runs, 298 s
+10/2739 runs, 13 s
+20/2739 runs, 18 s
+30/2739 runs, 24 s
+40/2739 runs, 29 s
+50/2739 runs, 35 s
+60/2739 runs, 40 s
+70/2739 runs, 48 s
+80/2739 runs, 54 s
+90/2739 runs, 61 s
+100/2739 runs, 67 s
+110/2739 runs, 73 s
+120/2739 runs, 79 s
+130/2739 runs, 86 s
+140/2739 runs, 93 s
+150/2739 runs, 100 s
+160/2739 runs, 107 s
+170/2739 runs, 113 s
+180/2739 runs, 121 s
+190/2739 runs, 127 s
+200/2739 runs, 134 s
+210/2739 runs, 141 s
+220/2739 runs, 148 s
+230/2739 runs, 155 s
+240/2739 runs, 163 s
+250/2739 runs, 169 s
+260/2739 runs, 177 s
+270/2739 runs, 183 s
+280/2739 runs, 190 s
+290/2739 runs, 197 s
+300/2739 runs, 204 s
+310/2739 runs, 211 s
+320/2739 runs, 217 s
+330/2739 runs, 225 s
+340/2739 runs, 231 s
+350/2739 runs, 238 s
+360/2739 runs, 243 s
+370/2739 runs, 249 s
+380/2739 runs, 254 s
+390/2739 runs, 261 s
+400/2739 runs, 266 s
+410/2739 runs, 273 s
+420/2739 runs, 278 s
+430/2739 runs, 285 s
+440/2739 runs, 290 s
+450/2739 runs, 296 s
+460/2739 runs, 301 s
+470/2739 runs, 307 s
+480/2739 runs, 312 s
+490/2739 runs, 319 s
+500/2739 runs, 325 s
+510/2739 runs, 333 s
+520/2739 runs, 339 s
+530/2739 runs, 346 s
+540/2739 runs, 352 s
+550/2739 runs, 360 s
+560/2739 runs, 366 s
+570/2739 runs, 373 s
+580/2739 runs, 380 s
+590/2739 runs, 386 s
+600/2739 runs, 392 s
+610/2739 runs, 399 s
+620/2739 runs, 404 s
+630/2739 runs, 411 s
+640/2739 runs, 418 s
+650/2739 runs, 423 s
+660/2739 runs, 429 s
+670/2739 runs, 434 s
+680/2739 runs, 441 s
+690/2739 runs, 447 s
+700/2739 runs, 455 s
+710/2739 runs, 461 s
+720/2739 runs, 468 s
+730/2739 runs, 473 s
+740/2739 runs, 480 s
+750/2739 runs, 485 s
+760/2739 runs, 490 s
+770/2739 runs, 496 s
+780/2739 runs, 501 s
+790/2739 runs, 507 s
+800/2739 runs, 513 s
+810/2739 runs, 518 s
+820/2739 runs, 523 s
+830/2739 runs, 529 s
+840/2739 runs, 534 s
+850/2739 runs, 540 s
+860/2739 runs, 546 s
+870/2739 runs, 552 s
+880/2739 runs, 557 s
+890/2739 runs, 563 s
+900/2739 runs, 568 s
+910/2739 runs, 574 s
+920/2739 runs, 579 s
+930/2739 runs, 584 s
+940/2739 runs, 589 s
+950/2739 runs, 595 s
+960/2739 runs, 599 s
+970/2739 runs, 605 s
+980/2739 runs, 610 s
+990/2739 runs, 616 s
+1000/2739 runs, 621 s
+1010/2739 runs, 627 s
+1020/2739 runs, 632 s
+1030/2739 runs, 637 s
+1040/2739 runs, 642 s
+1050/2739 runs, 648 s
+1060/2739 runs, 653 s
+1070/2739 runs, 658 s
+1080/2739 runs, 663 s
+1090/2739 runs, 669 s
+1100/2739 runs, 674 s
+1110/2739 runs, 680 s
+1120/2739 runs, 686 s
+1130/2739 runs, 693 s
+1140/2739 runs, 701 s
+1150/2739 runs, 709 s
+1160/2739 runs, 715 s
+1170/2739 runs, 723 s
+1180/2739 runs, 729 s
+1190/2739 runs, 736 s
+1200/2739 runs, 741 s
+1210/2739 runs, 748 s
+1220/2739 runs, 754 s
+1230/2739 runs, 760 s
+1240/2739 runs, 766 s
+1250/2739 runs, 774 s
+1260/2739 runs, 780 s
+1270/2739 runs, 788 s
+1280/2739 runs, 794 s
+1290/2739 runs, 801 s
+1300/2739 runs, 808 s
+1310/2739 runs, 815 s
+1320/2739 runs, 822 s
+1330/2739 runs, 830 s
+1340/2739 runs, 836 s
+1350/2739 runs, 843 s
+1360/2739 runs, 851 s
+1370/2739 runs, 858 s
+1380/2739 runs, 866 s
+1390/2739 runs, 873 s
+1400/2739 runs, 879 s
+1410/2739 runs, 884 s
+1420/2739 runs, 891 s
+1430/2739 runs, 895 s
+1440/2739 runs, 902 s
+1450/2739 runs, 907 s
+1460/2739 runs, 913 s
+1470/2739 runs, 921 s
+1480/2739 runs, 927 s
+1490/2739 runs, 935 s
+1500/2739 runs, 941 s
+1510/2739 runs, 949 s
+1520/2739 runs, 955 s
+1530/2739 runs, 962 s
+1540/2739 runs, 969 s
+1550/2739 runs, 976 s
+1560/2739 runs, 982 s
+1570/2739 runs, 990 s
+1580/2739 runs, 997 s
+1590/2739 runs, 1004 s
+1600/2739 runs, 1010 s
+1610/2739 runs, 1018 s
+1620/2739 runs, 1024 s
+1630/2739 runs, 1031 s
+1640/2739 runs, 1038 s
+1650/2739 runs, 1045 s
+1660/2739 runs, 1051 s
+1670/2739 runs, 1058 s
+1680/2739 runs, 1065 s
+1690/2739 runs, 1071 s
+1700/2739 runs, 1078 s
+1710/2739 runs, 1083 s
+1720/2739 runs, 1089 s
+1730/2739 runs, 1093 s
+1740/2739 runs, 1099 s
+1750/2739 runs, 1104 s
+1760/2739 runs, 1111 s
+1770/2739 runs, 1115 s
+1780/2739 runs, 1121 s
+1790/2739 runs, 1126 s
+1800/2739 runs, 1133 s
+1810/2739 runs, 1137 s
+1820/2739 runs, 1143 s
+1830/2739 runs, 1148 s
+1840/2739 runs, 1155 s
+1850/2739 runs, 1160 s
+1860/2739 runs, 1165 s
+1870/2739 runs, 1171 s
+1880/2739 runs, 1176 s
+1890/2739 runs, 1182 s
+1900/2739 runs, 1190 s
+1910/2739 runs, 1198 s
+1920/2739 runs, 1206 s
+1930/2739 runs, 1215 s
+1940/2739 runs, 1222 s
+1950/2739 runs, 1231 s
+1960/2739 runs, 1238 s
+1970/2739 runs, 1247 s
+1980/2739 runs, 1257 s
+1990/2739 runs, 1265 s
+2000/2739 runs, 1273 s
+2010/2739 runs, 1279 s
+2020/2739 runs, 1288 s
+2030/2739 runs, 1295 s
+2040/2739 runs, 1304 s
+2050/2739 runs, 1311 s
+2060/2739 runs, 1321 s
+2070/2739 runs, 1328 s
+2080/2739 runs, 1336 s
+2090/2739 runs, 1343 s
+2100/2739 runs, 1352 s
+2110/2739 runs, 1358 s
+2120/2739 runs, 1367 s
+2130/2739 runs, 1374 s
+2140/2739 runs, 1382 s
+2150/2739 runs, 1388 s
+2160/2739 runs, 1397 s
+2170/2739 runs, 1404 s
+2180/2739 runs, 1412 s
+2190/2739 runs, 1418 s
+2200/2739 runs, 1426 s
+2210/2739 runs, 1432 s
+2220/2739 runs, 1438 s
+2230/2739 runs, 1443 s
+2240/2739 runs, 1449 s
+2250/2739 runs, 1454 s
+2260/2739 runs, 1461 s
+2270/2739 runs, 1465 s
+2280/2739 runs, 1471 s
+2290/2739 runs, 1476 s
+2300/2739 runs, 1482 s
+2310/2739 runs, 1487 s
+2320/2739 runs, 1493 s
+2330/2739 runs, 1499 s
+2340/2739 runs, 1506 s
+2350/2739 runs, 1514 s
+2360/2739 runs, 1522 s
+2370/2739 runs, 1528 s
+2380/2739 runs, 1536 s
+2390/2739 runs, 1543 s
+2400/2739 runs, 1550 s
+2410/2739 runs, 1558 s
+2420/2739 runs, 1564 s
+2430/2739 runs, 1572 s
+2440/2739 runs, 1581 s
+2450/2739 runs, 1589 s
+2460/2739 runs, 1598 s
+2470/2739 runs, 1604 s
+2480/2739 runs, 1610 s
+2490/2739 runs, 1618 s
+2500/2739 runs, 1624 s
+2510/2739 runs, 1631 s
+2520/2739 runs, 1638 s
+2530/2739 runs, 1644 s
+2540/2739 runs, 1651 s
+2550/2739 runs, 1658 s
+2560/2739 runs, 1665 s
+2570/2739 runs, 1672 s
+2580/2739 runs, 1678 s
+2590/2739 runs, 1685 s
+2600/2739 runs, 1691 s
+2610/2739 runs, 1698 s
+2620/2739 runs, 1705 s
+2630/2739 runs, 1712 s
+2640/2739 runs, 1718 s
+2650/2739 runs, 1725 s
+2660/2739 runs, 1732 s
+2670/2739 runs, 1739 s
+2680/2739 runs, 1745 s
+2690/2739 runs, 1753 s
+2700/2739 runs, 1760 s
+2710/2739 runs, 1768 s
+2720/2739 runs, 1774 s
+2730/2739 runs, 1781 s
+# Residual of the PINN physics on the simulated runs (step 4.1)
+
+Generated by `experiments/pinn/check_residual.py --dataset dataset_v2` on 2026-10-27 14:37 (last call 1788 s). Model and levels: `experiments/pinn/physics.py`. Raw numbers: `results/sim/residual_v2/physics_residual.csv`, `results/sim/residual_v2/physics_warmup.csv`.
+
+Runs: 3150 complete runs of `data/sim/dataset_v2` (engines: pytorch (sim/batch_sim_gpu.py) 3150).
+Measure: RMS residual / std of the wave load in the same DOF, in %, after the first 30 s. 7-point central differences at 20 Hz; radiation memory rebuilt from the logged velocities (cubic interpolation between samples, exact matrix exponential).
+
+## 1. Residual by physics level (% of the wave load)
+
+**median over runs**
+
+| level | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| full | 0.00 | 0.03 | 0.02 | 1.63 |
+| full_eta | 0.00 | 0.05 | 0.02 | 1.64 |
+| linear_Uq | 2.99 | 1.67 | 5.46 | 13.25 |
+| linear_U | 2.99 | 3.19 | 8.06 | 13.25 |
+| linear_0q | 4.22 | 1.94 | 18.11 | 49.18 |
+| constant | 22.86 | 26.84 | 39.18 | 75.92 |
+
+**95th percentile over runs**
+
+| level | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| full | 0.07 | 0.32 | 0.28 | 3.39 |
+| full_eta | 0.11 | 0.47 | 0.40 | 3.61 |
+| linear_Uq | 10.48 | 4.13 | 14.63 | 47.38 |
+| linear_U | 10.48 | 46.20 | 27.85 | 47.38 |
+| linear_0q | 20.58 | 6.56 | 66.40 | 174.25 |
+| constant | 89.12 | 56.56 | 198.45 | 175.68 |
+
+**max over runs**
+
+| level | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| full | 0.29 | 0.77 | 1.36 | 4.25 |
+| full_eta | 0.46 | 1.25 | 1.99 | 4.38 |
+| linear_Uq | 24.80 | 12.91 | 37.27 | 78.68 |
+| linear_U | 24.80 | 54.71 | 70.00 | 78.68 |
+| linear_0q | 95.20 | 15.34 | 103.47 | 252.81 |
+| constant | 204.23 | 100.02 | 417.85 | 252.72 |
+
+Runs where `full` or `full_eta` reaches 1 % in heave, roll or pitch: 21.
+
+| run | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| otter_55kg_Hs0.10_Tp1.14_b135_U2_k5_r1 | 0.21 | 0.92 | 1.20 | 3.36 |
+| otter_55kg_Hs0.10_Tp1.14_b135_U2_k5_r2 | 0.20 | 0.96 | 1.13 | 3.44 |
+| otter_55kg_Hs0.10_Tp1.14_b135_U2_k5_r3 | 0.19 | 0.98 | 1.10 | 3.43 |
+| otter_55kg_Hs0.10_Tp1.14_b180_U2_k5_r1 | 0.26 | 1.20 | 1.31 | 3.61 |
+| otter_55kg_Hs0.10_Tp1.14_b180_U2_k5_r2 | 0.27 | 1.18 | 1.33 | 3.61 |
+| otter_55kg_Hs0.10_Tp1.14_b180_U2_k5_r3 | 0.27 | 1.25 | 1.34 | 3.62 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r1 | 0.15 | 0.55 | 1.28 | 2.85 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r1 | 0.27 | 0.82 | 1.86 | 3.01 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r2 | 0.15 | 0.59 | 1.20 | 3.03 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r2 | 0.26 | 0.88 | 1.75 | 3.17 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r3 | 0.15 | 0.62 | 1.22 | 3.00 |
+| otter_80kg_Hs0.10_Tp1.14_b135_U2_k5_r3 | 0.26 | 0.91 | 1.78 | 3.15 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r1 | 0.18 | 0.68 | 1.35 | 3.10 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r1 | 0.35 | 1.08 | 1.99 | 3.30 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r2 | 0.18 | 0.67 | 1.36 | 3.09 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r2 | 0.34 | 1.06 | 1.98 | 3.29 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r3 | 0.18 | 0.69 | 1.35 | 3.04 |
+| otter_80kg_Hs0.10_Tp1.14_b180_U2_k5_r3 | 0.35 | 1.10 | 1.99 | 3.25 |
+| otter_80kg_Hs0.10_Tp1.36_b135_U2_k5_r1 | 0.22 | 0.66 | 1.41 | 2.92 |
+| otter_80kg_Hs0.10_Tp1.36_b135_U2_k5_r2 | 0.21 | 0.64 | 1.40 | 2.97 |
+| otter_80kg_Hs0.10_Tp1.36_b135_U2_k5_r3 | 0.22 | 0.59 | 1.38 | 2.97 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r1 | 0.19 | 0.50 | 1.12 | 2.93 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r1 | 0.30 | 0.77 | 1.62 | 3.11 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r2 | 0.19 | 0.47 | 1.11 | 2.93 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r2 | 0.31 | 0.73 | 1.61 | 3.13 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r3 | 0.20 | 0.51 | 1.10 | 2.96 |
+| otter_80kg_Hs0.10_Tp1.36_b180_U2_k5_r3 | 0.32 | 0.80 | 1.61 | 3.16 |
+| otter_80kg_Hs0.20_Tp1.61_b180_U2_k5_r1 | 0.25 | 0.85 | 1.06 | 3.04 |
+| otter_80kg_Hs0.20_Tp1.61_b180_U2_k5_r2 | 0.27 | 0.77 | 1.13 | 3.01 |
+| otter_80kg_Hs0.20_Tp1.61_b180_U2_k5_r3 | 0.26 | 0.86 | 1.07 | 3.01 |
+
+## 2. Planned PINN physics (`linear_Uq`): where it stops being enough
+
+Median `linear_Uq` residual (%) by significant wave height and roll/pitch quadratic damping kappa:
+
+| condition | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| Hs 0.10, kappa 0 | 2.37 | 0.73 | 4.91 | 4.01 |
+| Hs 0.10, kappa 5 | 2.22 | 0.78 | 4.69 | 3.85 |
+| Hs 0.20, kappa 0 | 2.96 | 1.20 | 5.46 | 8.66 |
+| Hs 0.20, kappa 5 | 2.98 | 1.30 | 5.47 | 7.74 |
+| Hs 0.30, kappa 0 | 3.12 | 1.66 | 5.72 | 13.50 |
+| Hs 0.30, kappa 5 | 3.14 | 1.77 | 5.66 | 12.41 |
+| Hs 0.40, kappa 0 | 3.15 | 2.09 | 5.56 | 18.35 |
+| Hs 0.40, kappa 5 | 3.17 | 2.16 | 5.61 | 17.09 |
+| Hs 0.50, kappa 0 | 3.18 | 2.41 | 5.57 | 22.64 |
+| Hs 0.50, kappa 5 | 3.05 | 2.54 | 5.53 | 20.69 |
+
+By forward speed, linearized about the run's speed (`linear_Uq`) or about zero (`linear_0q`):
+
+| condition | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| U 0 m/s, linear_0q | 2.33 | 1.16 | 4.45 | 10.52 |
+| U 0 m/s, linear_Uq | 2.33 | 1.16 | 4.45 | 10.52 |
+| U 1 m/s, linear_0q | 4.88 | 1.75 | 18.11 | 57.26 |
+| U 1 m/s, linear_Uq | 2.88 | 1.53 | 4.52 | 12.15 |
+| U 2 m/s, linear_0q | 7.29 | 3.85 | 45.89 | 117.89 |
+| U 2 m/s, linear_Uq | 4.35 | 2.66 | 8.38 | 20.54 |
+
+## 3. Memory warm-up before a forecast origin
+
+Error of the memory force over the next 20 s when the memory states start from zero W seconds before the origin, % of std of the wave load; worst origin of each run, then max over runs:
+
+| warm-up | heave | roll | pitch | yaw |
+|---|---|---|---|---|
+| 5 s | 2.641 | 47.463 | 1.098 | 33.054 |
+| 10 s | 0.190 | 29.789 | 0.181 | 16.217 |
+| 20 s | 0.070 | 10.383 | 0.106 | 7.600 |
+| 40 s | 0.070 | 2.492 | 0.106 | 1.443 |
+| 60 s | 0.070 | 0.368 | 0.106 | 0.354 |
+
