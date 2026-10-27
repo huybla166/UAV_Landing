@@ -1,0 +1,9 @@
+MSS path set: D:\tools\MSS
+beta  90  w 2.00  roll sim/const 0.9999  pitch 0.9643  heave 1.0000
+beta  90  w 3.00  roll sim/const 0.9999  pitch 1.0087  heave 0.9999
+beta  90  w 4.00  roll sim/const 0.9999  pitch 1.0007  heave 0.9997
+beta  90  w 5.00  roll sim/const 0.9999  pitch 0.9998  heave 0.9990
+beta  90  w 5.50  roll sim/const 0.9998  pitch 0.9988  heave 0.9981
+beta  90  w 6.00  roll sim/const 0.9998  pitch 0.9941  heave 0.9978
+wrote D:/USV-landing-prediction/analysis/sim/A_regular_wave_b90_lo.csv
+model built at w0 = 3.307 rad/s; aperiodic T used [5 0.5 1]

@@ -1,0 +1,13 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  cached noWing_headQ ch0: 1051 windows (97s)
+  cached noWing_headQ ch1: 1051 windows (205s)
+  cached noWing_headQ ch2: 1051 windows (322s)
+  cached noWing_followQ ch0: 1051 windows (435s)
+  cached noWing_followQ ch1: 1051 windows (552s)
+  cached noWing_followQ ch2: 1051 windows (667s)
+  cached wing_headQ ch0: 1051 windows (781s)
+  cached wing_headQ ch1: 1051 windows (923s)
+  cached wing_headQ ch2: 1051 windows (1062s)
+  cached wing_followQ ch0: 1051 windows (1193s)
+  cached wing_followQ ch1: 1051 windows (1327s)
+  cached wing_followQ ch2: 1051 windows (1462s)

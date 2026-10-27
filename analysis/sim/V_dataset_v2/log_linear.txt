@@ -1,0 +1,62 @@
+linear: 3150 runs with a wave model
+fraction of predicted response variance at encounter frequencies > 9.5 rad/s (outside the fitted band), by (U, beta):
+            hf_frac_heave  hf_frac_roll  hf_frac_pitch  max_abs_we
+U beta_deg                                                        
+0 0                0.0000        0.0000         0.0000      9.5162
+  45               0.0000        0.0000         0.0003      9.5249
+  90               0.0000        0.0000         0.0000      9.5104
+  135              0.0000        0.0000         0.0000      9.5272
+  180              0.0000        0.0000         0.0000      9.5239
+1 0                0.0000        0.0000         0.0000      9.5147
+  45               0.0036        0.0114         0.0036     16.0416
+  90               0.0049        0.0352         0.0225     18.7122
+  135              0.0090        0.0693         0.0806     18.7588
+  180              0.0089        0.1256         0.0895     18.9109
+2 0                0.0000        0.0000         0.0000      9.7089
+  45               0.0077        0.0272         0.0077     22.7570
+  90               0.0568        0.0595         0.1448     28.0468
+  135              0.2109        0.0966         0.6173     28.0431
+  180              0.3259        0.2370         0.6989     28.0939
+
+sim std / linear prediction by ['kappa4']:
+        ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+kappa4                                                                                                                                                      
+0                 0.982           0.999            0.959            0.755           0.916            0.452            1.151           1.094            1.512
+5                 0.976           0.809            0.893            0.711           0.662            0.335            1.147           1.005            1.459
+
+sim std / linear prediction by ['visc']:
+       ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+visc                                                                                                                                                       
+False            0.978           0.952            0.925            0.725           0.692            0.370            1.150           1.068            1.457
+True             0.986           1.001            0.982            0.862           0.920            0.681            1.136           1.089            1.613
+
+sim std / linear prediction by ['U']:
+   ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+U                                                                                                                                                      
+0            0.999           0.934            0.941            0.819           0.708            0.795            1.211           1.115            1.095
+1            0.985           0.972            0.908            0.778           0.701            0.475            1.106           1.045            1.252
+2            0.954           0.979            0.937            0.655           0.684            0.309            1.111           1.049            1.608
+
+sim std / linear prediction by ['beta_deg']:
+          ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+beta_deg                                                                                                                                                      
+0                   1.028           0.989            1.172            0.855           0.803            0.865            1.193           1.091            1.594
+45                  1.025           0.964            1.177            0.896           0.766            0.884            1.136           1.061            1.575
+90                  0.980           0.969            0.917            0.779           0.690            0.717            1.128           1.060            1.207
+135                 0.937           0.964            0.680            0.681           0.670            0.351            1.121           1.076            1.020
+180                 0.903           0.942            0.632            0.669           0.688            0.298            1.136           1.054            1.030
+
+sim std / linear prediction by ['Hs']:
+     ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+Hs                                                                                                                                                       
+0.1            0.954           0.957            0.916            0.658           0.695            0.413            1.140           1.063            1.368
+0.2            0.989           0.973            0.939            0.726           0.662            0.381            1.162           1.090            1.442
+0.3            0.979           0.963            0.937            0.801           0.700            0.395            1.144           1.063            1.496
+0.4            0.983           0.968            0.931            0.829           0.719            0.386            1.163           1.076            1.572
+0.5            0.982           0.970            0.949            0.820           0.730            0.378            1.127           1.064            1.571
+
+sim std / linear prediction by ['violent']:
+         ratio_heave_med  ratio_roll_med  ratio_pitch_med  ratio_heave_p05  ratio_roll_p05  ratio_pitch_p05  ratio_heave_p95  ratio_roll_p95  ratio_pitch_p95
+violent                                                                                                                                                      
+False              0.970           0.958            0.903            0.727           0.692            0.367            1.152           1.071            1.217
+True               1.014           0.993            1.396            0.872           0.752            0.831            1.139           1.071            1.648

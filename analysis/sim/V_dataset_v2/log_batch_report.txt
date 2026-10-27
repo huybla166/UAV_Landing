@@ -1,0 +1,36 @@
+data/sim/dataset_v2: 3150 of 3150 runs attempted
+status
+ok         3126
+qc_fail      24
+engine
+pytorch    3150
+wall time per run: median 1 s, max 3 s
+
+not ok:
+  id                                        name  status message
+ 147      otter_55kg_Hs0.50_Tp3.04_b135_U0_k5_r2 qc_fail      Hs
+ 154      otter_55kg_Hs0.30_Tp2.73_b045_U0_k5_r2 qc_fail      Hs
+ 239      otter_80kg_Hs0.40_Tp2.28_b045_U0_k0_r1 qc_fail      Hs
+ 289      otter_80kg_Hs0.20_Tp1.92_b000_U0_k0_r3 qc_fail      Hs
+ 421      otter_55kg_Hs0.50_Tp3.04_b135_U0_k0_r2 qc_fail      Hs
+ 476      otter_80kg_Hs0.30_Tp2.73_b045_U0_k0_r2 qc_fail      Hs
+ 721 otter_55kg_Hs0.50_Tp2.55_b090_U0_k0_r1_visc qc_fail      Hs
+1086      otter_55kg_Hs0.40_Tp2.28_b180_U0_k5_r1 qc_fail      Hs
+1128      otter_80kg_Hs0.50_Tp3.53_b135_U0_k0_r2 qc_fail      Hs
+1139      otter_55kg_Hs0.50_Tp3.53_b180_U0_k5_r3 qc_fail      Hs
+1319      otter_80kg_Hs0.50_Tp3.53_b135_U0_k5_r2 qc_fail      Hs
+1809      otter_80kg_Hs0.50_Tp2.55_b090_U0_k0_r1 qc_fail      Hs
+1830      otter_55kg_Hs0.50_Tp3.53_b135_U0_k5_r2 qc_fail      Hs
+2036      otter_80kg_Hs0.50_Tp3.53_b180_U0_k5_r3 qc_fail      Hs
+2134      otter_55kg_Hs0.50_Tp2.55_b090_U0_k0_r1 qc_fail      Hs
+2391      otter_80kg_Hs0.50_Tp3.53_b180_U0_k0_r3 qc_fail      Hs
+2601      otter_55kg_Hs0.20_Tp1.92_b000_U0_k0_r3 qc_fail      Hs
+2633 otter_80kg_Hs0.50_Tp2.55_b090_U0_k0_r1_visc qc_fail      Hs
+2652      otter_55kg_Hs0.50_Tp3.53_b180_U0_k0_r3 qc_fail      Hs
+2656      otter_80kg_Hs0.30_Tp2.73_b045_U0_k5_r2 qc_fail      Hs
+2673      otter_55kg_Hs0.30_Tp2.73_b045_U0_k0_r2 qc_fail      Hs
+2682      otter_55kg_Hs0.20_Tp1.92_b000_U0_k5_r3 qc_fail      Hs
+2933      otter_80kg_Hs0.20_Tp1.92_b000_U0_k5_r3 qc_fail      Hs
+2988      otter_55kg_Hs0.50_Tp3.53_b135_U0_k0_r2 qc_fail      Hs
+
+files: 3150 run CSVs, 8960 MB in data/sim/dataset_v2\runs

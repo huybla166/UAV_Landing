@@ -1,0 +1,4 @@
+noWing_headQ: val pinball zero-shot 0.3316 -> fine-tuned 0.3211 (epochs run 40)
+noWing_followQ: val pinball zero-shot 0.3544 -> fine-tuned 0.3462 (epochs run 40)
+wing_headQ: val pinball zero-shot 0.3643 -> fine-tuned 0.3539 (epochs run 40)
+wing_followQ: val pinball zero-shot 0.3571 -> fine-tuned 0.3500 (epochs run 40)

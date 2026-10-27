@@ -1,0 +1,4 @@
+integrity: 3150 runs, 0 failed
+
+kinematic residual (rel. RMS, 4th-order differences): max over runs {'kin_D': 0.00243, 'kin_phi': 0.00933, 'kin_theta': 0.00427, 'kin_psi': 0.0177}
+{'pytorch': 3150}

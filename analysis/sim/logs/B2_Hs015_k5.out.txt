@@ -1,0 +1,20 @@
+MSS path set: D:\tools\MSS
+Spectrum: JONSWAP with spreading function
+Significant wave height: Hs = 0.15 m
+Zero crossing period: Tz = 1.349 s
+Peak period: T0 = Tz / 0.710 = 1.9 s
+Peak frequency: w0 = 2*pi/T0 = 3.3069 rad/s
+Number of wave frequencies: 100
+Number of wave directions: 24
+B2_Hs015_k5 heave  std nl 0.03791 lin 0.04154 | corr 0.9714 | nRMSE 0.2680 | R2_lin 0.9282
+B2_Hs015_k5 roll   std nl 0.02498 lin 0.03387 | corr 0.9496 | nRMSE 0.5135 | R2_lin 0.7363
+B2_Hs015_k5 pitch  std nl 0.02383 lin 0.05356 | corr 0.5775 | nRMSE 1.8591 | R2_lin -2.4564
+B2_Hs015_k5 yaw    std nl 0.0211 lin 4.017 | corr 0.0082 | nRMSE 190.3708 | R2_lin -36243.4096
+Spectrum: JONSWAP with spreading function
+Significant wave height: Hs = 0.15 m
+Zero crossing period: Tz = 1.349 s
+Peak period: T0 = Tz / 0.710 = 1.9 s
+Peak frequency: w0 = 2*pi/T0 = 3.3069 rad/s
+Number of wave frequencies: 100
+Number of wave directions: 24
+B2_Hs015_k5: predicted std from components  heave 0.0332  roll 0.03131  pitch 0.0409

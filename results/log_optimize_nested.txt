@@ -1,0 +1,17 @@
+  nested ft_fredf test=noWing_headQ cal=noWing_followQ
+  nested ft_fredf test=noWing_headQ cal=wing_headQ
+  nested ft_fredf test=noWing_headQ cal=wing_followQ
+  nested ft_fredf test=noWing_followQ cal=noWing_headQ
+  nested ft_fredf test=noWing_followQ cal=wing_headQ
+  nested ft_fredf test=noWing_followQ cal=wing_followQ
+  nested ft_fredf test=wing_headQ cal=noWing_headQ
+  nested ft_fredf test=wing_headQ cal=noWing_followQ
+  nested ft_fredf test=wing_headQ cal=wing_followQ
+  nested ft_fredf test=wing_followQ cal=noWing_headQ
+  nested ft_fredf test=wing_followQ cal=noWing_followQ
+  nested ft_fredf test=wing_followQ cal=wing_headQ
+  noWing_headQ done
+  noWing_followQ done
+  wing_headQ done
+  wing_followQ done
+ridge (history, alpha) chosen on validation: [(120, 1e-06), (200, 1e-06)]

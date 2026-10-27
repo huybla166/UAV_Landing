@@ -1,0 +1,10 @@
+forces: 343 runs rebuilt (8 skipped)
+max |rebuilt - logged| / std, worst run per column:
+zeta    3.14e-05
+tau1    2.71e-05
+tau2    2.64e-05
+tau3    2.04e-05
+tau4    3.12e-05
+tau5    2.52e-05
+tau6    5.54e-05
+median: {'zeta': '2.7e-06', 'tau1': '3.4e-06', 'tau2': '3.1e-06', 'tau3': '1.8e-06', 'tau4': '2.4e-06', 'tau5': '2.6e-06', 'tau6': '8.2e-06'}

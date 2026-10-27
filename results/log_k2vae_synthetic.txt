@@ -1,0 +1,5 @@
+synthetic sum-of-sines: lead   1s  nRMSE (3 ch) = 0.11, 0.10, 0.12
+synthetic sum-of-sines: lead   2s  nRMSE (3 ch) = 0.11, 0.12, 0.13
+synthetic sum-of-sines: lead   5s  nRMSE (3 ch) = 0.15, 0.13, 0.15
+synthetic sum-of-sines: lead  10s  nRMSE (3 ch) = 0.13, 0.13, 0.15
+synthetic sum-of-sines: lead  20s  nRMSE (3 ch) = 0.13, 0.13, 0.17

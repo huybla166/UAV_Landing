@@ -1,0 +1,13 @@
+MSS path set: D:\tools\MSS
+B2_Hs050_k5  heave  std nl 0.1292 | L0 0.1429 R2   0.9147 | LU 0.1346 R2   0.8990
+B2_Hs050_k5  roll   std nl 0.05507 | L0 0.08254 R2   0.4196 | LU 0.08186 R2   0.4581
+B2_Hs050_k5  pitch  std nl 0.06267 | L0 0.1363 R2  -2.8386 | LU 0.1331 R2  -1.5028
+B2_Hs050_k5  yaw    std nl 0.09465 | L0 20.32 R2 -46105.6125 | LU 48.85 R2 -266364.0085
+Spectrum: JONSWAP with spreading function
+Significant wave height: Hs = 0.5 m
+Zero crossing period: Tz = 1.775 s
+Peak period: T0 = Tz / 0.710 = 2.5 s
+Peak frequency: w0 = 2*pi/T0 = 2.5133 rad/s
+Number of wave frequencies: 100
+Number of wave directions: 24
+B2_Hs050_k5: std sim (after 60 s) heave 0.1292 roll 0.05507 pitch 0.06267 | component prediction coherent 0.09508 0.08 0.08822 | expected 0.1207 0.07677 0.09813

@@ -1,0 +1,8 @@
+MSS path set: D:\tools\MSS
+Spectrum: JONSWAP with spreading function
+Significant wave height: Hs = 0.1 m
+Zero crossing period: Tz = 0.9656 s
+Peak period: T0 = Tz / 0.710 = 1.36 s
+Peak frequency: w0 = 2*pi/T0 = 4.62 rad/s
+Number of wave frequencies: 100
+Number of wave directions: 24

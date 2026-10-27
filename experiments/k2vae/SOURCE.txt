@@ -1,0 +1,2 @@
+Copied from https://github.com/decisionintelligence/K2VAE (commit 19c602a8, MIT License, see LICENSE).
+Only change: package-relative imports, optional reformer_pytorch import.

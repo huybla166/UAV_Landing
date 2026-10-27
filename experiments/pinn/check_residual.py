@@ -1,0 +1,205 @@
+"""Physics residual of the PINN levels on every complete simulated run (step 4.1 report).
+
+  python experiments/pinn/check_residual.py [--dataset dataset_v2] [--workers 4] [--max N]
+
+For each run of data/sim/<dataset> (default dataset_v1) with a complete CSV (600 s) and its coef JSON:
+  * relative residual (RMS residual / std of the wave load, per DOF, after 30 s) of
+      full        the simulator's equations, nu as logged
+      full_eta    the same, nu rebuilt from eta rates + logged u, v (what the PINN will predict)
+      linear_Uq   linearized about the run's forward speed + quadratic roll/pitch/yaw damping
+                  (the physics planned for the PINN loss)
+      linear_U    the same without the quadratic damping
+      linear_0q   linearized about U = 0 + quadratic damping
+      constant    MSS constant matrices at w0, no memory (design note eq. 1.7)
+  * memory warm-up: error of the memory force over a 20 s horizon when the memory states start from
+    zero W seconds before the forecast origin, relative to std of the wave load (worst origin).
+Writes physics_residual.csv, physics_warmup.csv (appended run by run, so an interrupted call resumes where
+it stopped; --fresh starts over) and physics_residual.md to results/sim/ for dataset_v1, results/sim/residual_v2/
+for dataset_v2.
+"""
+import argparse
+import glob
+import json
+import os
+import sys
+import time
+from multiprocessing import Pool
+
+import numpy as np
+import pandas as pd
+import torch
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from physics import (VesselModel, ddt, interior, load_run, nu_from_eta,  # noqa: E402
+                     relative_residual)
+
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+N_ROWS = 12002
+SKIP = 600                   # 30 s
+WARMUP_S = [5, 10, 20, 40, 60]
+HORIZON = 400                # 20 s
+REPORT_DOF = {"heave": 2, "roll": 3, "pitch": 4, "yaw": 5}
+LEVELS = ["full", "full_eta", "linear_Uq", "linear_U", "linear_0q", "constant"]
+
+
+def out_dir(dataset):
+    sub = [] if dataset == "dataset_v1" else ["residual_" + dataset.replace("dataset_", "")]
+    return os.path.join(ROOT, "results", "sim", *sub)
+
+
+def complete_runs(dataset):
+    out = []
+    for csv in sorted(glob.glob(os.path.join(ROOT, "data", "sim", dataset, "runs", "*.csv"))):
+        js = csv[:-4] + "_coef.json"
+        if os.path.exists(js) and sum(1 for _ in open(csv)) == N_ROWS:
+            out.append((csv, js))
+    return out
+
+
+def check_run(csv, js):
+    d, m = load_run(csv), VesselModel.from_json(js)
+    run = m.coef["run"]
+    nu, eta, tau, tw, h = d["nu"], d["eta"], d["tau_ext"], d["tau_wave"], d["h"]
+    I = interior
+    mu = m.memory_force(nu, m.memory_states(nu, h))
+    rel = {
+        "full": relative_residual(m.residual(nu, eta, tau, h, "full", mu=mu), tw, skip=SKIP),
+        "linear_Uq": relative_residual(m.residual(nu, eta, tau, h, "linear", U=run["U_ref"], quadratic=True, mu=mu),
+                                       tw, skip=SKIP),
+        "linear_U": relative_residual(m.residual(nu, eta, tau, h, "linear", U=run["U_ref"], mu=mu), tw, skip=SKIP),
+        "linear_0q": relative_residual(m.residual(nu, eta, tau, h, "linear", U=0.0, quadratic=True, mu=mu), tw, skip=SKIP),
+        "constant": relative_residual(m.residual(nu, eta, tau, h, "constant"), tw, skip=SKIP),
+    }
+    nu_rec = nu_from_eta(I(eta), ddt(eta, h), I(nu)[:, 0], I(nu)[:, 1])
+    rel["full_eta"] = relative_residual(m.residual(nu_rec, I(eta), I(tau), h, "full"), I(tw), skip=SKIP)
+
+    meta = {"name": os.path.basename(csv)[:-4], "engine": run.get("engine", "octave"), "vessel": m.coef["main"]["name"],
+            "Hs": run["Hs"], "Tp": run["Tp"], "beta_deg": run["beta_deg"], "U": run["U_ref"],
+            "kappa4": m.kappa[0], "visc": bool(np.any(np.asarray(run["delta_zeta_345_used"])[[0, 2]] > 0))}
+    rows = [{**meta, "level": lev, **{k: 100 * float(r[i]) for k, i in REPORT_DOF.items()}} for lev, r in rel.items()]
+
+    scale = tw[SKIP:].std(0)
+    warm = []
+    for W in WARMUP_S:
+        w = int(round(W / h))
+        errs = []
+        for k0 in range(max(2400, w), nu.shape[0] - HORIZON, 1200):
+            seg = nu[k0 - w:k0 + HORIZON]
+            e = m.memory_force(seg, m.memory_states(seg, h))[w:] - mu[k0:k0 + HORIZON]
+            errs.append(e.pow(2).mean(0).sqrt() / scale)
+        worst = torch.stack(errs).max(0).values
+        warm.append({**meta, "warmup_s": W, **{k: 100 * float(worst[i]) for k, i in REPORT_DOF.items()}})
+    return rows, warm
+
+
+def fmt_table(df, index, cols, digits=2):
+    lines = ["| " + " | ".join([index] + cols) + " |", "|" + "---|" * (len(cols) + 1)]
+    for idx, row in df.iterrows():
+        lines.append("| " + " | ".join([str(idx)] + [f"{row[c]:.{digits}f}" for c in cols]) + " |")
+    return "\n".join(lines)
+
+
+def report(res, warm, n_runs, seconds, dataset):
+    dofs = list(REPORT_DOF)
+    out = os.path.relpath(out_dir(dataset), ROOT).replace(os.sep, "/")
+    L = ["# Residual of the PINN physics on the simulated runs (step 4.1)", "",
+         f"Generated by `experiments/pinn/check_residual.py --dataset {dataset}` on {time.strftime('%Y-%m-%d %H:%M')} "
+         f"(last call {seconds:.0f} s). Model and levels: `experiments/pinn/physics.py`. Raw numbers: "
+         f"`{out}/physics_residual.csv`, `{out}/physics_warmup.csv`.", "",
+         f"Runs: {n_runs} complete runs of `data/sim/{dataset}` "
+         f"(engines: {', '.join(f'{k} {v}' for k, v in res.drop_duplicates('name').engine.value_counts().items())}).",
+         "Measure: RMS residual / std of the wave load in the same DOF, in %, after the first 30 s. "
+         "7-point central differences at 20 Hz; radiation memory rebuilt from the logged velocities "
+         "(cubic interpolation between samples, exact matrix exponential).", ""]
+
+    L += ["## 1. Residual by physics level (% of the wave load)", ""]
+    for stat, fn in [("median", "median"), ("95th percentile", lambda s: s.quantile(0.95)), ("max", "max")]:
+        t = res.groupby("level")[dofs].agg(fn).reindex(LEVELS)
+        L += [f"**{stat} over runs**", "", fmt_table(t, "level", dofs), ""]
+
+    bad = res[(res.level.isin(["full", "full_eta"])) & (res[["heave", "roll", "pitch"]].max(axis=1) >= 1.0)]
+    L += [f"Runs where `full` or `full_eta` reaches 1 % in heave, roll or pitch: {bad.name.nunique()}.", ""]
+    if len(bad):
+        L += [fmt_table(bad.set_index("name")[["level"] + dofs].drop(columns="level"), "run", dofs), ""]
+
+    lin = res[res.level == "linear_Uq"]
+    L += ["## 2. Planned PINN physics (`linear_Uq`): where it stops being enough", "",
+          "Median `linear_Uq` residual (%) by significant wave height and roll/pitch quadratic damping kappa:", ""]
+    t = lin.groupby(["Hs", "kappa4"])[dofs].median()
+    t.index = [f"Hs {a:.2f}, kappa {b:g}" for a, b in t.index]
+    L += [fmt_table(t, "condition", dofs), ""]
+    t = res[res.level.isin(["linear_Uq", "linear_0q"])].groupby(["U", "level"])[dofs].median()
+    t.index = [f"U {u:g} m/s, {lev}" for u, lev in t.index]
+    L += ["By forward speed, linearized about the run's speed (`linear_Uq`) or about zero (`linear_0q`):", "",
+          fmt_table(t, "condition", dofs), ""]
+
+    L += ["## 3. Memory warm-up before a forecast origin", "",
+          "Error of the memory force over the next 20 s when the memory states start from zero W seconds "
+          "before the origin, % of std of the wave load; worst origin of each run, then max over runs:", ""]
+    t = warm.groupby("warmup_s")[dofs].max()
+    t.index = [f"{w} s" for w in t.index]
+    L += [fmt_table(t, "warm-up", dofs, 3), ""]
+    return "\n".join(L)
+
+
+def append_csv(path, rows):
+    pd.DataFrame(rows).to_csv(path, mode="a", header=not os.path.exists(path), index=False, float_format="%.4f")
+
+
+def check_run_retry(item):
+    """check_run, waiting for RAM when the machine runs other batches."""
+    torch.set_num_threads(1)
+    csv, js = item
+    for attempt in range(10):
+        try:
+            return check_run(csv, js)
+        except (RuntimeError, MemoryError) as e:
+            if "memory" not in str(e) or attempt == 9:
+                raise
+            print(f"out of memory on {os.path.basename(csv)}, retry in 60 s", flush=True)
+            time.sleep(60)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dataset", default="dataset_v1", help="folder under data/sim")
+    ap.add_argument("--workers", type=int, default=1, help="parallel processes (about 0.3 GB RAM each)")
+    ap.add_argument("--max", type=int, default=0, help="check at most N runs (evenly spaced)")
+    ap.add_argument("--fresh", action="store_true", help="discard results of an earlier, interrupted call")
+    args = ap.parse_args()
+    torch.set_num_threads(1)
+    runs = complete_runs(args.dataset)
+    if args.max and len(runs) > args.max:
+        runs = [runs[i] for i in np.linspace(0, len(runs) - 1, args.max).round().astype(int)]
+    OUT = out_dir(args.dataset)
+    os.makedirs(OUT, exist_ok=True)
+    res_csv, warm_csv = os.path.join(OUT, "physics_residual.csv"), os.path.join(OUT, "physics_warmup.csv")
+    done = set()
+    if args.fresh or args.max:
+        for p in (res_csv, warm_csv):
+            if os.path.exists(p):
+                os.remove(p)
+    elif os.path.exists(res_csv) and os.path.exists(warm_csv):
+        done = set(pd.read_csv(res_csv).name) & set(pd.read_csv(warm_csv).name)
+    t0 = time.time()
+    todo = [r for r in runs if os.path.basename(r[0])[:-4] not in done]
+    pool = Pool(args.workers) if args.workers > 1 else None
+    results = pool.imap_unordered(check_run_retry, todo) if pool else map(check_run_retry, todo)
+    for i, (r, w) in enumerate(results):
+        append_csv(res_csv, r)
+        append_csv(warm_csv, w)
+        if (i + 1) % 10 == 0:
+            print(f"{i + 1}/{len(todo)} runs, {time.time() - t0:.0f} s", flush=True)
+    if pool:
+        pool.close(); pool.join()
+    res, wdf = pd.read_csv(res_csv), pd.read_csv(warm_csv)
+    names = {os.path.basename(c)[:-4] for c, _ in runs}
+    res, wdf = res[res.name.isin(names)], wdf[wdf.name.isin(names)]
+    md = report(res, wdf, res.name.nunique(), time.time() - t0, args.dataset)
+    with open(os.path.join(OUT, "physics_residual.md"), "w", encoding="utf-8") as f:
+        f.write(md + "\n")
+    print(md)
+
+
+if __name__ == "__main__":
+    main()

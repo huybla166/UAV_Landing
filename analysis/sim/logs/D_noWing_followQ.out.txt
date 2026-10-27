@@ -1,0 +1,10 @@
+MSS path set: D:\tools\MSS
+Spectrum: JONSWAP with spreading function
+Significant wave height: Hs = 0.1 m
+Zero crossing period: Tz = 1.3206 s
+Peak period: T0 = Tz / 0.710 = 1.86 s
+Peak frequency: w0 = 2*pi/T0 = 3.3781 rad/s
+Number of wave frequencies: 100
+Number of wave directions: 24
+otter55_noWing_followQ
+  Hs_in 0.10  Hs_real 0.10 | std heave 0.019 m, roll 1.13 deg, pitch 1.33 deg | max roll 4.06 deg | U 1.00 m/s

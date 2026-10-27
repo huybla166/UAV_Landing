@@ -1,0 +1,1264 @@
+
+=== page 1
+Contents lists available at ScienceDirect
+Journal of the Franklin Institute
+journal homepage: www.elsevier.com/locate/fi
+Autonomous shipboard landing of quadrotor UAV: A 
+neuroadaptive predeﬁned-time approach with LSTM prediction
+Yu Wang
+ ∗, Huiliao Yang
+ , Dawei Wu
+ , Yuquan Chen
+College of Artiﬁcial Intelligence and Automation, Hohai University, Changzhou, 213200, China
+a r t i c l e  i n f o
+Keywords:
+Quadrotor autonomous landing
+Practically predeﬁned-time stable
+LSTM prediction
+Adaptive commond ﬁlter
+Neural networks
+ a b s t r a c t
+This article presents a control strategy for quadrotor unmanned aerial vehicle (UAV) to achieve 
+autonomous landing on moving unmanned surface vehicle (USV). First, to address the challenge 
+of safe landing due to USV deck oscillations induced by wind and waves, the Long Short-Term 
+Memory (LSTM) network is employed to predict motion trajectories and identify optimal landing 
+window. Next, a modiﬁed practically predeﬁned time stable (PPTS) system is established as the-
+oretical basis of subsequent control design. Subsequently, by incorporating neural networks into 
+the adaptive command-ﬁltered backstepping control framework, the system’s unknown dynam-
+ics terms (UDT) and diﬀerential explosion phenomena are eﬀectively addressed. Stability analysis 
+demonstrates that the closed-loop system is practically predeﬁned-time stable (PPTS), with track-
+ing errors converging to a small residual set within the predeﬁned time. Finally, simulation results 
+verify the eﬀectiveness and superiority of the proposed method.
+1.  Introduction
+In recent years, cross-domain unmanned systems integrating quadrotor UAVs and USVs have garnered considerable research in-
+terest due to their operational eﬃciency in three-dimensional air-maritime environments [1]. Such collaborative systems leverage 
+the complementary strengths of both platforms to perform diverse missions, including maritime patrol, reconnaissance, anti-surface 
+operations, maritime exploration and coordinated multi-domain operations. Successful autonomous shipboard landing (ASL) is es-
+sential for UAV-USV cooperation but poses signiﬁcant challenges when operating within the harsh, variable conditions typical of 
+maritime environments [2]. Although quadrotors simplify the landing maneuvers compared to ﬁxed-wing UAVs through their verti-
+cal take-oﬀ and landing (VTOL) capability, this advantage does not eliminate the fundamental challenge of landing on an oﬀshore 
+shaking platform. The problem’s complexity, therefore, shifts from executing a complex landing trajectory to ensuring safe contact 
+at the moment of touchdown [3]. 
+The ﬁrst major challenge in the ASL of the quadrotor stems from the oscillatory behaviour of the USV in time-varying maritime 
+environments with multi-scale disturbances. Even when the quadrotor meets the six degrees of freedom (6-DOF) of relative position 
+and velocity requirements for landing on the USV, signiﬁcant attitude deviations can still lead to collisions between the multirotor’s 
+propellers and the USV’s deck [4]. This risk is especially acute on smaller USVs, which are subject to more severe and higher-frequency 
+motions than large vessels, making the identiﬁcation of a stable landing window both critical and diﬃcult [5]. To prevent collisions 
+between the descending quadrotor and the oscillating USV, a short-term prediction of the deck motion can be employed. The descent 
+∗ Corresponding author.
+ E-mail addresses: andyyu@hhu.edu.cn (Y. Wang), huiliao.yang@hhu.edu.cn (H. Yang), wudawei_hhu@hhu.edu.cn (D. Wu), 
+20200068@hhu.edu.cn (Y. Chen).
+https://doi.org/10.1016/j.jfranklin.2025.108381
+Received 15 July 2025; Received in revised form 15 November 2025; Accepted 30 December 2025
+Journal of the Franklin Institute 363 (2026) 108381 
+Available online 2 January 2026 
+0016-0032/© 2026 The Franklin Institute. Published by Elsevier Inc. All rights are reserved, including those for text and data mining, AI training, 
+and similar technologies. 
+=== page 2
+Y. Wang et al.
+Nomenclature
+Notations and subscripts
+(⋅)𝑑, (⋅)𝑐 Desired or commanded value
+(⋅)𝑒 Error value (e.g., 𝝃𝑒 = 𝝃𝑞 − 𝝃𝑑 )
+(⋅)𝑞 Quantity related to the quadrotor
+(⋅)𝑠 Quantity related to the USV
+𝑠(⋅),𝑐 (⋅) 𝑠(⋅) ≜ sin(⋅), 𝑐(⋅) ≜ cos(⋅)
+Other symbols
+𝜶𝑣, 𝜶𝜔 Virtual controllers for position and attitude loops
+𝜷𝑣, 𝜷𝜔 Filtered signals of virtual controllers
+𝝐𝑣, 𝝐𝜔 Unknown bounds of virtual controller derivatives
+𝜸𝑣, 𝜸𝜔 Filtering errors
+𝝉𝑞 Control torque input vector
+𝑻𝑑, 𝝉𝑑 External disturbance force and torque vectors
+𝜏 Time constant of command ﬁlter
+𝑝, ̄ 𝑝 Fractional power parameters for controllers
+𝑇𝑐, ̄𝑇𝑐 Predeﬁned-time parameters
+𝑇𝑞 Total thrust of the quadrotor
+States variables
+𝜼𝑐 Commanded Euler angle vector ([𝜙𝑐,𝜃𝑐,𝜓𝑠]𝖳)
+𝜼𝑞, 𝝎𝑞 Euler angle ([𝜙𝑞,𝜃𝑞,𝜓𝑞]𝖳) and angular velocity vectors of the quadrotor
+𝝃𝑒, 𝜼𝑒 Position and attitude tracking error vectors
+𝝃𝑞, 𝒗𝑞 Position [𝑥𝑞,𝑦𝑞,𝑧𝑞]𝖳 and velocity [𝑣𝑞𝑥,𝑣𝑞𝑦,𝑣𝑞𝑧]𝖳 vectors of the quadrotor
+̆𝒗𝑒, ̆𝝎𝑒 Filtered velocity and angular velocity tracking error vector
+phase is initiated only when the USV’s attitude variations are predicted to remain minimal for a brief interval [6]. This “when-to-land” 
+decision-making process is a distinctive and important problem for quadrotor-based ASL systems. Deck motion prediction can utilize 
+various methods like Extended Kalman Filters (EKF) [7], Autoregressive (AR) models [6], and neural networks (NNs/LSTM) [8,9]. 
+This study applies LSTM networks due to their adaptability across sea conditions, online training capability, and strong scalability 
+and accuracy [4].
+ASL implementation faces another challenge in developing robust quadrotor control systems. Currently, several control approaches 
+have shown promising results for landing maneuvers, for instance, internal model based PI control [10], nonlinear model predictive 
+control [11], adaptive robust hierarchical control [12,13], visual-based tracking control [14], invariant ellipsoid-based method [15], 
+adaptive learning control [16], etc. Nevertheless, the aforementioned control strategies mainly focus on achieving asymptotic conver-
+gence or uniformly bounded stability, resulting in state convergence to equilibrium (or its neighborhood) as time approaches inﬁnity. 
+The control performance of systems can also be speciﬁed through the framework of prescribed performance control (PPC) [17]. 
+PPC methodologies aim to enforce pre-speciﬁed transient and steady-state performance metrics, such as steady-state error bounds, 
+by transforming the tracking error and constraining it within a predeﬁned performance funnel [18,19]. To ensure both transient 
+performance and steady-state error, in [18], a PPC method is proposed for the ASL’s relative position control. While PPC excels in 
+shaping the behavioural envelope of the system response, the explicit upper bound of the settling time is often not the primary design 
+objective and may not be strictly guaranteed a priori. Since existing approaches lack explicit convergence time constraints, they prove 
+inadequate for applications with critical timing constraints, such as the ASL of a quadrotor, where the mission must be completed 
+within a speciﬁc time window dictated by the moving deck’s motion. Developing a ﬁxed-time control strategy with guaranteed upper 
+bound of convergence time (UBCT) thus becomes imperative for quadrotor ASL. Recent studies have developed ﬁnite-time control 
+solutions for quadrotor ASL. Arif et al. [20] proposed a scheme ensuring tracking error convergence within ﬁnite time during descent. 
+Meanwhile, Huang et al. [21,22] investigated ﬁxed-time control for helicopters under disturbances. Notably, the UBCT in such ﬁnite-
+time approaches depends heavily on the system’s initial conditions of the control system, while in practice, initial state measurement 
+is often diﬃcult [23]. Although the UBCT is less dependent on the initial conditions in ﬁxed-time control, the settling time is usually 
+determined by a complex function subject to multiple design parameters, making it hard for engineer to set a required convergence 
+time in advance [24].
+To tackle the drawbacks of above methods, the predeﬁned-time stability framework was introduced [25], oﬀering a fundamental 
+advantage through its user-deﬁned UBCT that depends solely on a single tunable parameter. This characteristic makes it more con-
+ducive to application of predeﬁned-time controller in some practical systems, such as robotic manipulators [26], spacecraft system 
+[27] and multi-UAV systems [28]. In [29], by combining predeﬁned-time control with sliding mode theory, a controller is developed 
+to realize the predeﬁned-time synchronization of complex chaotic systems. Recently, several practical predeﬁned-time stability crite-
+rion were reported in [27] and [30], where the relationship between the UBCT 𝑇𝑝 and the predeﬁned-time 𝑇𝑐 is proven that satisfying 
+𝑇𝑝 ≤ 2𝑇𝑐 and 𝑇𝑝 ≤
+√
+2𝑇𝑐 , respectively. Therefore, how to extend the existing predetermined-time control results to improve system 
+performance is a direction that needs further research.
+Journal of the Franklin Institute 363 (2026) 108381 
+2 
+=== page 3
+Y. Wang et al.
+Fig. 1. Reference frames.
+Additionally, to perform various missions, the quadrotor must adapt to multiple USV platforms without prior knowledge of their 
+exact dynamic characteristics. When UDT exist in the system dynamics, adaptive backstepping control is formulated by incorporation 
+fuzzy logic systems (FLSs) [30,31] or NNs [32–34], which supply the estimations of the UDT. In [34], an adaptive predeﬁned-time 
+backstepping strategy was constructed for space tethered system, and radial basis function NNs (RBF-NNs) are utilized to approximate 
+the uncertain nonlinear term. A recognized limitation of backstepping control is its tendency toward “explosion of complexity” 
+arising from recursively diﬀerentiating virtual control signal, while the afore-mentioned reports [30,33,34] did not pay attention to 
+this problem. To address this issue, [35] innovatively developed a dynamic surface control method, incorporating ﬁlters into the 
+backstepping framework to substantially alleviate computational burdens. Recently, an adaptive command ﬁlter-based predeﬁned-
+time control strategy is proposed for time-delay nonlinear systems in [36]. To our knowledge, few studies have investigated the 
+integration of predeﬁned-time neural network control with adaptive command-ﬁltered backstepping techniques.
+Inspired by these observations, we propose an adaptive RBF-NNs-based predetermined-time control scheme to achieve reliable 
+ASL for quadrotor UAV on swaying USV under UDT and external perturbations. The main contributions are summarized as follows:
+1) Unlike prior studies [10,12,14–16] that neglected the oscillatory dynamics of USV in harsh marine environments, this work 
+explicitly accounts for deck motion eﬀects on ASL. By integrating LSTM-NNs, we establish a safe landing time window instead of 
+complex mission planning [13].
+2) A modiﬁed PPTS criterion is established, which is an extension in [29] and can improve transient performance compared with 
+the PPTS systems in [27] and [30]. Besides, diﬀerent from the ﬁnite/ﬁxed-time control [20–22], the UBCT can be determined by 
+adjusting one design parameter.
+3) By synthesizing a novel adaptive predeﬁned-time ﬁlter with RBF-NNs, the control design eﬀectively eliminates the “explosion of 
+complexity” and compensates for UDT in the quadrotor’s dynamics.
+The remainder of this paper is organized as follows. Section 2 presents the system dynamics and control objective. Section 3 details 
+the deck motion prediction and dynamics reformulation. The controller design and stability analysis are developed in Section 4, while 
+Section 5 validates the theoretical results through numerical simulations. Finally, Section 6 concludes the study.
+2.  System model and problem statement
+As illustrated in Fig. 1, we establish three reference frames: 1) Inertial frame 𝑖={𝑂𝑖,𝑥𝑖,𝑦𝑖,𝑧𝑖}, with origin 𝑂𝑖 locating at a 
+reference point; 2) Quadrotor body frame 𝑞={𝑂𝑞,𝑥𝑞,𝑦𝑞,𝑧𝑞}, with origin 𝑂𝑞 ﬁxed at the quadrotor’s geometric center; 3) USV body 
+frame 𝑠={𝑂𝑠,𝑥𝑠,𝑦𝑠,𝑧𝑠}, with origin 𝑂𝑠 ﬁxed at the vessel’s geometric center.
+2.1.  System model
+To describe the quadrotor’s rotational dynamics, we utilize the rotation matrix 𝑹 ≜ {𝑹 ∈𝑆𝑂(3)|det 𝑹 = 1, 𝑹𝖳𝑹 = 𝑹𝑹𝖳 = 𝑰3} and 
+Euler angle 𝜼𝑞 = [𝜙𝑞,𝜃𝑞,𝜓𝑞]𝖳. The quadrotor’s model can be constructed by [13]:
+̇𝝃𝑞 = 𝒗𝑞 (1)
+̇𝒗𝑞 = −̂ 𝑔̂𝑰3 + 𝑇𝑞𝑚 𝑹𝜼̂𝒆3 + Δ𝑭𝑚 + 𝑻𝑑 (2)
+̇𝜼𝑞 = 𝑹𝑟𝝎𝑞 (3)
+𝑱 ̇𝝎𝑞 = −𝑺(𝝎𝑞)𝑱 𝝎𝑞 + 𝝉𝑞 + Δ𝑭𝐽 + 𝝉𝑑 (4)
+Journal of the Franklin Institute 363 (2026) 108381 
+3 
+=== page 4
+Y. Wang et al.
+where 𝝃𝑞 = [𝑥𝑞,𝑦𝑞,𝑧𝑞]𝖳 and 𝒗𝑞 = [𝑣𝑞𝑥,𝑣𝑞𝑦,𝑣𝑞𝑧]𝖳 denote the quadrotor’s position and velocity represented in the frame 𝑖, respectively, 
+̂ 𝑔 is the acceleration of gravity, ̂𝑰3 = [0, 0, 1]⊤, 𝑇𝑞 denotes the force input along ̂𝑰3, 𝝎𝑞 ∈ 3 stands for the quadrotor’s angular velocity 
+in 𝑞, 𝑺(𝝎𝑞) is the skew-symmetric matrix 𝑚 denotes the quadrotor’s mass, 𝑱 = diag(𝑗𝑥,𝑗𝑦,𝑗𝑧) is the inertial moment matrix, 𝝉𝑞 is 
+the torque input, Δ𝑭𝑚 and Δ𝑭𝐽 represent the unmodeled dynamics components (including the bounded mass uncertainty and inertia 
+uncertainty), 𝑻𝑑 and 𝝉𝑑 are the external perturbations, the transformation matrix 𝑹𝜼 and 𝑹𝑟 can be derived from Euler angles as 
+follows
+𝑹𝜼 =
+⎡
+⎢
+⎢
+⎢⎣
+𝑐𝜃𝑞𝑐𝜓𝑞 𝑠𝜃𝑞𝑐𝜓𝑞𝑠𝜙𝑞 −𝑠𝜓𝑞𝑐𝜙𝑞 𝑠𝜃𝑞𝑐𝜓𝑞𝑐𝜙𝑞 +𝑠𝜓𝑞𝑠𝜙𝑞
+𝑐𝜃𝑞𝑠𝜓𝑞 𝑠𝜃𝑞𝑠𝜓𝑞𝑠𝜙𝑞 +𝑐𝜓𝑞𝑐𝜙𝑞 𝑠𝜃𝑞𝑠𝜓𝑞𝑐𝜙𝑞 −𝑐𝜓𝑞𝑠𝜙𝑞
+−𝑠𝜃𝑞 𝑐𝜃𝑞𝑠𝜙𝑞 𝑐𝜃𝑞𝑐𝜙𝑞
+⎤
+⎥
+⎥
+⎥⎦
+, 𝑹𝑟 = 1𝑐𝜃𝑞
+⎡
+⎢
+⎢
+⎢⎣
+𝑐𝜃𝑞 𝑠𝜙𝑞𝑠𝜃𝑞 𝑐𝜙𝑞𝑠𝜃𝑞
+0 𝑐𝜙𝑞𝑐𝜃𝑞 −𝑠𝜙𝑞𝑐𝜃𝑞
+0 𝑠𝜙𝑞 𝑐𝜙𝑞
+⎤
+⎥
+⎥
+⎥⎦
+.
+The USV exhibits 6-DOF motion in marine environments, which can be categorized into two distinct types based on their excitation 
+mechanisms. The ﬁrst group consists of surge 𝑥𝑠, sway 𝑦𝑠, yaw 𝜓𝑠 motions that are actively generated through propeller actions while 
+also being inﬂuenced by ocean wave disturbances. The second group comprises pitch 𝜃𝑠, heave 𝑧𝑠 and roll 𝜙𝑠 motions that are purely 
+wave-induced, resulting from the dynamic interaction between the vessel hull and sea waves. In the context of ASL missions, this 
+study speciﬁcally considers the scenario where the USV is sailing in open sea conditions, subject to typical wave-induced disturbances. 
+The following periodic signals can be applied to model the heave, roll and pitch motions [37]
+⎧
+⎪
+⎪
+⎪
+⎪
+⎪
+⎨
+⎪
+⎪
+⎪
+⎪
+⎪⎩
+𝑧𝑠 =
+𝑁∑︂
+𝑖=1
+𝐴𝑧𝑖 sin(𝜔𝑧𝑖𝑡 +𝜑𝑧𝑖) +ℎ𝑠
+𝜙𝑠 =
+𝑁∑︂
+𝑖=1
+𝐴𝜙𝑖 sin(𝜔𝜙𝑖𝑡 +𝜑𝜙𝑖)
+𝜃𝑠 =
+𝑁∑︂
+𝑖=1
+𝐴𝜃𝑖 sin(𝜔𝜃𝑖𝑡 +𝜑𝜃𝑖)
+(5)
+In Eq. (5), the wave-induced motions are characterized by amplitudes 𝐴▿𝑖, frequencies 𝜔▿𝑖, and random phases 𝜑▿𝑖 (▿ ∈𝑧,𝜙,𝜃 ), 
+with ℎ𝑠 denoting the USV deck’s vertical position relative to the 𝑥𝑖𝑂𝑖𝑦𝑖 reference plane in 𝑖.
+Remark 1. The diﬀerentiation between actively controlled and passively excited DOF is important for developing eﬀective control 
+strategies, as it informs the compensation approach required for each motion type during the landing phase. The passive motions of 
+the USV can be eﬀectively modeled by applying the sea wave power spectrum model in Eq. (5), as commonly employed in marine 
+vehicle dynamics studies [10]. 
+Assumption 1. Throughout the ﬁnal descent stage, the quadrotor’s roll and pitch motions remain constrained within bounded ranges 
+as 𝜙𝑞 ∈
+(
+−𝜋2,𝜋2 ) and 𝜃𝑞 ∈ (−𝜋2,𝜋2 ).
+2.2.  Control objective
+The main objective in this study is to design control inputs (the applied thrust 𝑇𝑞 and torque 𝝉𝑞) for the quadrotor system governed 
+by Eqs. (1)–(4), ensuring that the quadrotor UAV can track the USV and achieve safely ASL in predeﬁned-time with consideration of 
+UDT and external disturbances.
+2.3.  Preliminaries
+Lemma 1. For any 𝛿▿ > 0 and a unknown nonlinear function  (̄ 𝑧) ∈ ℝ deﬁned on Θ𝑋 , RBF-NNs can be used to approximate function  (̄ 𝑧)
+as [23]
+ (̄ 𝑧) = 𝑾 𝖳𝐺(̄ 𝑧) + Γ(̄ 𝑧), |Γ(̄ 𝑧)| ≤𝛿▿ < ∞
+where ̄ 𝑧 is the RBF-NNs activation signal, 𝑾 ∈ ℝ𝐿×1 is the optimal weight vector, 𝐿 represents the number of neurons, Γ(̄ 𝑧) represents the 
+approximation deviation and 𝐺(̄ 𝑧) = [𝑔1(̄ 𝑧),𝑔 2(̄ 𝑧), …,𝑔𝐿(̄ 𝑧)]𝖳 represents the radial basis function of NNs with the form of Gaussian function
+𝑔𝑖(̄ 𝑧) = exp
+[
+− (̄ 𝑧−̄ 𝜐𝑖)𝖳(̄ 𝑧−̄ 𝜐𝑖)
+2𝜍2𝑖
+]
+, 𝑖= 1, 2, …,𝐿
+where ̄ 𝜐𝑖 = [̄ 𝜐𝑖1,̄ 𝜐𝑖2, …,̄ 𝜐𝑖𝑛]𝖳 denotes the center vector of the neural cell and 𝜍𝑖 is the activation width of function 𝑔𝑖(̄ 𝑧).
+Lemma 2. [27] For arbitrary 𝑚1,𝑚 2 ∈ ℝ and positive constants Δ1, Δ2,𝜒 > 0, there exists
+|𝑚1|Δ1 |𝑚2|Δ2 ≤ Δ1|𝑚1|Δ1+Δ2Δ1 + Δ2 𝜒 + Δ2|𝑚2|Δ1+Δ2Δ1 + Δ2 𝜒 − Δ1Δ2.
+Journal of the Franklin Institute 363 (2026) 108381 
+4 
+=== page 5
+Y. Wang et al.
+Lemma 3. [30] If there exists variables 𝜀𝑖 ≥ 0(𝑖 = 1, 2, …,𝑛 ) and 𝑐 >0, one can obtain 
+𝑛∑︂
+𝑖=1
+𝜀𝑐𝑖 ≥
+( 𝑛∑︂
+𝑖=1
+𝜀𝑖
+)𝑐
+, if 0<𝑐 < 1 (6a)
+𝑛∑︂
+𝑖=1
+𝜀𝑐𝑖 ≥𝑛1−𝑐
+( 𝑛∑︂
+𝑖=1
+𝜀𝑖
+)𝑐
+, if 𝑐 >1 (6b)
+When 𝑐 = 1, the relationship holds with equality.
+Lemma 4. [31] For any 𝑟1 > 0,𝑟 2 ≤𝑟1,𝑟 3 ≥ 0 and 𝜆> 0, the following relationships hold
+(𝑟1 −𝑟2)1+𝜆 ≥𝑟1+𝜆2 −𝑟1+𝜆1
+𝑟𝜆3(𝑟1 −𝑟3) ≤ 11 +𝜆 (𝑟1+𝜆1 −𝑟1+𝜆3 ).
+Lemma 5. For 𝑏1,𝑏 2,𝑏 3 > 0 and 𝑠> 1 are all constants, consider the following diﬀerential equation
+̇Θ(𝑡) = −𝑏1Θ(𝑡) −𝑏2Θ𝑠(𝑡) +𝑏3Ψ(𝑡) (7)
+where Ψ(𝑡) denotes a non-negative function. If Θ(𝑡0) ⩾ 0, then Θ(𝑡) ⩾ 0 for any 𝑡 ⩾𝑡0.
+Proof.  See Appendix: Proof of Lemma 5.  
+In the subsequent control design, the adaptive law for the parameter will be designed as the nonlinear diﬀerential equation form 
+in (7). By applying Lemma 5, the positivity of the adaptive parameter can be guaranteed, which will be used in (31) and (B.8).
+3.  LSTM-based prediction for deck motion and dynamics model reconstruction
+3.1.  Deck motion prediction based on LSTM network
+The oscillatory responses of USVs (heave 𝑧𝑠, roll 𝜙𝑠 and pitch 𝜃𝑠) exhibit strong correlations with both current and historical 
+wave data across varying sea conditions. To accurately predict these motions, we employ LSTM networks. The LSTM architecture 
+features specialized gating mechanisms and memory cells that collectively regulate information ﬂow. Three interactive gates govern 
+this process, i.e., input gate 𝒊𝑡, forget gate 𝒇𝑡 and output gate 𝒐𝑡. At time 𝑡, LSTM dynamics are described by [4]
+⎧
+⎪
+⎪
+⎪
+⎪
+⎨
+⎪
+⎪
+⎪
+⎪⎩
+𝒊𝑡 =𝜎(𝑾𝒙𝒊𝒙𝑡 + 𝑾𝒉𝒊𝒉𝑡−1 + 𝒃𝒊)
+𝒇𝑡 =𝜎(𝑾𝒙𝒇 𝒙𝑡 + 𝑾𝒉𝒇 𝒉𝑡−1 + 𝒃𝒇 )
+𝒈𝑡 = tanh (𝑾𝒙𝒈𝒙𝑡 + 𝑾𝒉𝒈𝒉𝑡−1 + 𝒃𝒈)
+𝒐𝑡 =𝜎(𝑾𝒙𝒐𝒙𝑡 + 𝑾𝒉𝒐𝒉𝑡−1 + 𝒃𝒐)
+𝒄𝑡 = 𝒄𝑡−1⊙ 𝒇𝑡 + 𝒈𝑡⊙ 𝒊𝑡
+𝒉𝑡 = 𝒐𝑡⊙ tanh (𝒄𝑡)
+(8)
+In (8), three key state variables are utilized in the LSTM network architecture, i.e., input vector 𝒙𝑡, hidden state 𝒉𝑡, and memory 
+cell state 𝒄𝑡. Through the training process, the network learns several critical parameters, i.e., input weight matrices 𝑾𝒙𝒔, recurrent 
+weight matrices 𝑾𝒉𝒔, and bias vectors 𝒃𝒔 (where 𝒔 ∈ {𝒊, 𝒇, 𝒈, 𝒐} corresponds to the input, forget, cell candidate, and output gates 
+respectively). The operator ⊙ represents element-wise multiplication between tensors.
+Implementation of the LSTM predictor involves the following sequence of operations: 1) Data Preparation; 2) Data Normalization; 
+3) Network Training; 4) Post-processing (readers can refer to [4] for the detailed process). The USV’s roll, heave, and pitch movements 
+can be modeled as superpositions of ﬁnite sinusoidal components (see Eq. (5)). By analyzing the temporal characteristics of these 
+harmonic trajectories, the platform’s motion becomes predictable [20]. This enables the deployment of the LSTM network for deck 
+motion forecasting. Consequently, successful ASL requires completing the operation within the predicted time window Δ𝑡 while 
+simultaneously satisfying the following conditions:
+Deﬁnition 1. Given angular thresholds ̄𝜙> 0, ̄𝜃 >0, if there is a landing condition satisfying
+ℂ1 ≜{(𝑧𝑠𝑑, ̇ 𝑧𝑠)|𝑧𝑠 > 0, ̇ 𝑧𝑠 < 0}
+ℂ2 ≜
+⎧
+⎪
+⎨
+⎪⎩
+(𝜙𝑠,𝜃𝑠)
+||||| ∑︁𝑡1+Δ𝑡𝑡1 ||𝜙𝑠||Δ𝑡 ≤ ̄𝜙, ∑︁𝑡1+Δ𝑡𝑡1 ||𝜃𝑠||Δ𝑡 ≤ ̄𝜃⎫⎪⎬⎪⎭. (9)
+Then the landing maneuver is activated at 𝑡1 and constrained to terminate within [𝑡1,𝑡 1 + Δ𝑡].
+Remark 2. Condition (9) speciﬁes two requirements: 1) the USV begins its descent after reaching the peak position and before 
+attaining the horizontal plane 𝑥𝑖𝑂𝑖𝑦𝑖; 2) both the USV’s roll and pitch movements are relatively stable with a small range of variation 
+with respect to plane 𝑥𝑖𝑂𝑖𝑦𝑖 during a future period. These constraints ensure safe clearance between the oscillating USV and landing 
+quadrotor.
+Journal of the Franklin Institute 363 (2026) 108381 
+5 
+=== page 6
+Y. Wang et al.
+Fig. 2. Schematic diagram of quadrotor ASL.
+Using LSTM networks, the USV deck motions can be predicted to determine a safe time interval [𝑡1,𝑡 1 + Δ𝑡] for ASL. This predicted 
+window Δ𝑡 directly determines the predeﬁned convergence time 𝑇𝑐 (𝑇𝑐 satisfying 𝑇𝑐 < Δ𝑡) for the subsequent control design, ensuring 
+the landing is completed within the period of minimal deck oscillation. The predicted heave motion 𝑧𝑠(𝑡) within this window is used 
+to construct the quadrotor’s descending reference trajectory 𝑧𝑠𝑑 (𝑡). Commands, including the start time 𝑡1 and the reference trajectory, 
+are subsequently transmitted to the quadrotor system to facilitate landing control. Then, the predeﬁned-time control scheme for ASL 
+is developed in the next section. To show a better understanding of the design concept, a schematic diagram of predeﬁned-time 
+control framework for ASL based on LSTM predictor is depicted in Fig. 2.
+Before proceeding to the controller design, the following dynamics reformulation is carried out.
+3.2.  Dynamics reformulation
+Denote 𝝃𝑑 = [𝑥𝑠𝑑,𝑦𝑠𝑑,𝑧𝑠𝑑 ]𝖳 and its derivative ̇𝝃𝑑 = [ ̇ 𝑥𝑠𝑑, ̇ 𝑦𝑠𝑑, ̇ 𝑧𝑠𝑑 ]𝖳. Here, [𝑥𝑠𝑑,𝑦𝑠𝑑 ]𝖳 deﬁnes the ﬁxed target landing coordinates on 
+the USV’s deck in the horizontal plane 𝑥𝑖𝑂𝑖𝑦𝑖. Crucially, the reference altitude 𝑧𝑠𝑑 (𝑡) is generated from the LSTM network’s prediction 
+of the USV’s heave motion, speciﬁcally during the safe landing time window [𝑡1,𝑡 1 + Δ𝑡] identiﬁed in Deﬁnition 1. This ensures that 
+the quadrotor’s descent proﬁle is synchronized with the vertical motion of the landing platform. Deﬁne the position tracking error 
+𝝃𝑒 = 𝝃𝑞 − 𝝃𝑑 = [𝑥𝑒,𝑦𝑒,𝑧𝑒]𝖳 and velocity tracking error 𝒗𝑒 = 𝒗𝑞 − ̇𝝃𝑑 , where ̇𝝃𝑑 = [̇𝝃𝖳𝑠, ̇ 𝑧𝑠𝑑 ]𝖳. From Eqs. (1) and (2), one can obtain
+̇𝒗𝑒 = 𝑭𝑝 + 𝒖𝑝 + Δ𝑭𝑚 + 𝑻𝑑 (10)
+where 𝑭𝑝 = −𝑔̂𝒆3 − ̈𝝃𝑑 and 𝒖𝑝 = 𝑇𝑞𝑚 𝑹𝜼̂𝒆3 = [𝑢𝑝𝑥,𝑢𝑝𝑦,𝑢𝑝𝑧]𝖳 is the command force. Given the command thrust 𝒖𝑝, the main rotor thrust is 
+computed as 𝑇𝑞 =𝑚‖𝒖𝑝‖ (since ‖𝑹𝜼̂𝒆3‖ = 1). The corresponding attitude commands roll 𝜙𝑐 and pitch 𝜃𝑐 are then derived from
+⎧
+⎪
+⎪
+⎨
+⎪
+⎪⎩
+𝜙𝑐 = arcsin
+(𝑢𝑝𝑥 sin𝜓𝑠 −𝑢𝑝𝑦 cos𝜓𝑠
+‖𝒖𝑝‖
+)
+,𝜙𝑐 ∈
+(
+−𝜋2,𝜋2 )
+𝜃𝑐 = arcsin
+(𝑢𝑝𝑥 cos𝜓𝑠 −𝑢𝑝𝑦 sin𝜓𝑠
+𝑢𝑝𝑧
+)
+,𝜃𝑐 ∈
+(
+−𝜋2,𝜋2 ) (11)
+Deﬁne the quadrotor’s command Euler angle as 𝜼𝑐 = [𝜙𝑐,𝜃𝑐,𝜓𝑠]𝖳. From Eqs. (3) and (4) and the expression 𝜼𝑒 = 𝜼𝑞 − 𝜼𝑐 =
+[𝜙𝑒,𝜃𝑒,𝜓𝑒]𝖳, the attitude error dynamics is established as
+̈𝜼𝑒 = 𝑭𝑎 + 𝑹𝑟𝑱 −1𝝉𝑞 + Δ ̄𝑭𝐽 + ̄𝝉𝑑 (12)
+where 𝑭𝑎 = ̇𝑹𝑟𝝎𝑞 + 𝑹𝑟𝑱 −1[−𝑺(𝝎𝑞)𝑱 𝝎𝑞] − ̈𝜼𝑐, Δ ̄𝑭𝐽 = 𝑹𝑟𝑱 −1Δ𝑭𝐽 and ̄𝝉𝑑 = 𝑹𝑟𝑱 −1𝝉𝑑 .
+Through this transformation framework, the ASL problem is reformulated as a predeﬁned-time tracking control problem for the 
+position and attitude error dynamics in Eqs. (10) and (12), respectively. Proposition 1 illustrates this statement.
+Proposition 1. For the error dynamics given in (10) and (12), if the command inputs 𝒖𝑝 and 𝝉𝑞 are designed such that
+lim
+𝑡→𝑇⋆
+‖‖‖[𝝃𝑒(𝑡), 𝒗𝑒(𝑡), 𝜼𝑒(𝑡), ̇𝜼𝑒(𝑡)]𝖳‖‖‖ ≤ ̆ 𝜎 (13)
+where 𝑇⋆ ∈ ℝ+ is a predeﬁned convergence time and ̆ 𝜎 >0 denotes an accuracy threshold, then the system attains practical predeﬁned-time 
+stability, thereby solving the ASL problem deﬁned in Section 2.2.
+Assumption 2. The total disturbances terms 𝑻𝑑 and ̄𝝉𝑑 are bounded by unknown constants, such that ‖𝑻𝑑 ‖ ≤𝑑𝑚 and ‖̄𝝉𝑑 ‖ ≤𝑑𝑛.
+Journal of the Franklin Institute 363 (2026) 108381 
+6 
+=== page 7
+Y. Wang et al.
+4.  Neuroadaptive predeﬁned-time control
+4.1.  Modiﬁed suﬃcient condition of the Lyapunov function for PPTS system
+Deﬁnition 2. [24,25] Consider the following nonlinear dynamic system
+̇𝒙 = 𝒇 (𝑡, 𝒙), 𝒙(0) = 𝒙0 (14)
+where 𝒙 ∈ ℝ𝑛×1 stands for the system state, 𝒇 (⋅) ∶ ℝ𝑛 → ℝ𝑛 is a continuous function. Suppose that for any initial state 𝒙(0) there is 
+‖𝒙(𝑡)‖ ≤𝛿▵, ∀𝑡 ≥𝑇𝑐, where 𝛿▵ and 𝑇𝑐 are positive scalars. Then, the solution of system (14) is PPTS with 𝑇𝑐 being the UBCT.
+Lemma 6. [27,30,38] For system (14), if there exists a Lyapunov function 𝑉 (𝒙) such that
+̇𝑉 (𝒙) ≤ − 𝜋𝑞𝑇𝑐 (𝑉 1−𝑞∕2(𝒙) +𝑉 1+𝑞∕2(𝒙)) +𝜚 (15)
+where scalars 𝑇𝑐 > 0, 𝑞 ∈ (0, 1) and 𝜚> 0, then the origin 𝒙0 of the system is PPTS. Moreover, the settling time 𝑇𝑐𝑚 bounded by 𝑇𝑐𝑚 <𝑇 max =√
+2𝑇𝑐 .
+Next, inspired by [29], a modiﬁed suﬃcient condition of the Lyapunov function for PPTS System is established as follows.
+Theorem 1. For system (14), if the derivative of a Lyapunov function 𝑉 (𝒙) satisﬁes
+̇𝑉 (𝒙) ≤ − 𝜋𝑞𝑇𝑐 (2𝑉 (𝒙) +𝑉 1−𝑞∕2(𝒙) +𝑉 1+𝑞∕2(𝒙)) +𝜚 (16)
+where 𝑇𝑐 > 0 represents a predeﬁned time parameter, 𝑞 ∈ (0, 1) and 𝜚> 0. Then the origin 𝑥0 of the system is PPTS. Moreover, the settling 
+time 𝑇𝑝 is bounded by 𝑇𝑝 ≤
+√𝜍
+𝜍 𝑇𝑐 , where 𝜍 is a real number and satisﬁes 0<𝜍 < 1.
+Proof.  Consider the following two cases:
+Case 1: Inequality (16) can be reformulated as
+̇𝑉 ≤ − 𝜋𝑞𝑇𝑐 (2𝑉 +𝜍𝑉 1−𝑞∕2 +𝑉 1+𝑞∕2)
+− 𝜋𝑞𝑇𝑐 (1 −𝜍)𝑉 1−𝑞∕2 +𝜚 (17)
+According to Eq. (17), one can obtain that
+̇𝑉 ≤ − 𝜋𝑞𝑇𝑐 (2𝑉 +𝜍𝑉 1−𝑞∕2 +𝑉 1+𝑞∕2) (18)
+holds for 𝑉 (𝒙) ≥
+( 𝜚𝑞𝑇𝑐
+(1−𝜍)𝜋
+) 2
+2−𝑞
+. Let 𝑇𝑝 be the settling time. Integrating Eq. (18) from 0 to 𝑇𝑝, yields
+∫
+𝑇𝑝
+0
+𝜋 d𝑡
+𝑞𝑇𝑐
+≤ ∫
+𝑉𝑡𝑓
+𝑉0
+− d𝑉
+2𝑉 +𝜍𝑉 1−𝑞2 +𝑉 1+𝑞2 (19)
+The settling time complies to
+𝑇𝑝 ≤ −𝑞𝑇𝑐𝜍𝜋 ∫ 𝑉𝑡𝑓𝑉0 d𝑉𝑉 1−𝑞2 (1 + 1√𝜍𝑉 𝑞2 )2 = − 2√𝜍𝑇𝑐𝜍𝜋 ∫ 𝑉𝑡𝑓𝑉0 d
+(
+1√𝜍𝑉 𝑞2
+)
+(
+1 + 1√𝜍𝑉 𝑞2
+)2
+≤
+2√𝜍𝑇𝑐
+𝜍𝜋 ∫
+𝑉0
+0
+d
+(
+1√𝜍𝑉 𝑞2
+)
+(
+1 + 1√𝜍𝑉𝑞
+) =
+2√𝜍𝑇𝑐
+𝜍𝜋
+[
+arctan
+(
+1√𝜍𝑉
+𝑞
+2
+0
+)]
+≤
+√𝜍
+𝜍 𝑇𝑐
+(20)
+Case 2: For the case 𝑉 (𝒙) ≥
+( 𝜚𝑞𝑇𝑐
+(1−𝜍)𝜋
+) 2
+2+𝑞
+, inequality (16) can be organized as follows
+̇𝑉 ≤ − 𝜋𝑞𝑇𝑐 (2𝑉 +𝑉 1−𝑞∕2 +𝜍𝑉 1+𝑞∕2) (21)
+The derivation process is similar to that of Case 1, and the UBCT of the system can be derived as 𝑇𝑝 ≤
+√𝜍
+𝜍 𝑇𝑐.
+According to Deﬁnition 2, it can be concluded that the solution of system (14) is PPTS and the settling time 𝑇𝑝 is bounded by 𝑇𝑝 ≤
+√𝜍
+𝜍 𝑇𝑐. Besides, the convergence region of system solution can be derived as 
+{
+lim𝑡→𝑇𝑝 𝒙 ∣𝑉 (𝒙) ≤ min
+{( 𝜚𝑞𝑇𝑐
+(1−𝜍)𝜋
+) 2
+2−𝑞
+,
+( 𝜚𝑞𝑇𝑐
+(1−𝜍)𝜋
+) 2
+2+𝑞
+}}
+. 
+Then, this ends the proof.  
+Journal of the Franklin Institute 363 (2026) 108381 
+7 
+=== page 8
+Y. Wang et al.
+Fig. 3. Time responses for the proposed PPTS system.
+Remark 3. In view of Lemma 6 and Theorem 1, when the residual term 𝜚 vanishes, inequalities (15) and (16) will transform into 
+predeﬁned-time Lyapunov suﬃcient condition for classical PTS system [38] and modiﬁed PTS system [29], respectively. Let Δ𝑇𝑐 be 
+the settling time diﬀerence of the two PTS systems, there is
+Δ𝑇𝑐 = 𝑞𝑇𝑐𝜋 ( ∫ 𝑉00 d𝑉𝑉 1−𝑞2 +𝑉 1+𝑞2 − ∫ 𝑉00 d𝑉2𝑉 +𝑉 1−𝑞2 +𝑉 1+𝑞2 ) ≥ 0,
+which implies that the convergence rate of the introduced modiﬁed PTS System is faster than the classical PTS systems. The analytically 
+proven inequality Δ𝑇𝑐 ≥ 0 conclusively demonstrate that the 2𝑉  term is not superﬁcial but is, in fact, the direct cause of accelerated 
+convergence in the nominal case. While a direct, closed-form settling time comparison like Δ𝑇𝑐 becomes intractable for 𝜚> 0, the 
+dynamics governed by inequality (16) will always dissipate energy faster than those governed by inequality (15) for the same 𝜚 and 
+initial conditions, especially during the initial transient phase. This leads to a system that reaches within the small neighborhood 
+near the origin more quickly, thereby improving transient performance and leaving more time within the predeﬁned window 𝑇𝑐 for 
+the controller to counteract the eﬀect of persistent disturbances (represented by 𝜚> 0). 
+Fig. 3 compares the time response of the Lyapunov function for systems governed by Lemma 6 and Theorem 1, from the same 
+initial conditions and with the same parameters. The results clearly indicate that the trajectory under our modiﬁed condition (16) 
+exhibits a steeper initial descent and reaches near the origin more quickly than the classical PPTS system [27,30]. This demonstrates 
+the practical eﬀectiveness of the 2𝑉  term in improving transient performance for a representative case. Fig. 3(b) shows that the actual 
+convergence time is always shorter than the predeﬁned time parameter 𝑇𝑐 , which further indicates that the UBCT of system tracking 
+error can be accurately preset by adjusting one design parameter. In Fig. 3(d), ﬁve sets of diﬀerent initial conditions are further tested 
+to demonstrate that the proposed PPTS system is independent of the initial conditions.
+Remark 4. It is important to note that 𝜍 is an auxiliary constant introduced in the proof to facilitate the completion of squares in 
+the diﬀerential inequality, allowing for an analytical integration. It is not a tunable parameter. The Lyapunov condition presented in 
+Theorem 1 oﬀers an alternative suﬃcient condition for predeﬁned-time practical stability. 
+Journal of the Franklin Institute 363 (2026) 108381 
+8 
+=== page 9
+Y. Wang et al.
+4.2.  Position tracking control (Outer-loop)
+4.2.1.  Predeﬁned-time position controller design
+To address the “explosion of complexity” problem in the backstepping control, a command ﬁlter is designed as
+𝜏 ̇𝜷𝑣 = −
+(
+𝑐1 + 12 )𝜸𝑣 −𝑐2sig1−𝑝(𝜸𝑣) −𝑐3sig1+𝑝(𝜸𝑣) −𝜏̂ 𝜖𝑣 tanh ( 𝜸𝑣𝜎𝑣 ) (22)
+where 𝜏 denotes the time constant, 0<𝑝< 1, 𝜎𝑣 > 0, 𝑐1,𝑐 2 and 𝑐3 are positive design constants, 𝜷𝑣 is the ﬁltered signal of virtual 
+controller 𝜶𝑣, function sig𝑘(⋅)= sign(⋅)| ⋅ |𝑘, 𝜸𝑣 = 𝜷𝑣 − 𝜶𝑣 denotes the ﬁltered error, and 𝜷𝑣(0) = 𝜶𝑣(0). As function 𝜶 is continuous, the 
+relationship 𝜖𝑣 ≥ ‖ ̇𝜶𝑣‖ holds with 𝜖𝑣 being an unknown constant. ̂ 𝜖𝑣 represents the estimation of 𝜖𝑣, and ̃ 𝜖𝑣 =𝜖𝑣 − ̂ 𝜖𝑣. The update law 
+of ̂ 𝜖𝑣 is constructed as
+̇̂ 𝜖𝑣 = −
+(
+2𝜋
+𝑝𝑇𝑐
++𝑐▵
+)
+̂ 𝜖𝑣 −𝑐4̂ 𝜖1+𝑝𝑣 +𝜏𝜸𝖳𝑣 tanh
+( 𝜸𝑣
+𝜎𝑣
+)
+(23)
+where 𝑐4,𝑐 ▵ are positive design constants.
+Step 1: Select the Lyapunov candidate function
+𝑉1 = 12 𝝃𝖳𝑒 𝝃𝑒 + 𝜏2 𝜸𝖳𝑣 𝜸𝑣 + 12̃ 𝜖2𝑣. (24)
+Diﬀerentiating Eq. (24) with respect to time yields
+̇𝑉1 =𝝃𝖳𝑒 𝒗𝑒 + 𝜸𝖳𝑣𝜏̇𝜸𝑣 + ̃ 𝜖𝑣̇̃ 𝜖𝑣
+=𝝃𝑒(̆𝒗𝑒 + 𝜸𝑣 + 𝜶𝑣) + 𝜸𝖳𝑣𝜏( ̇𝜷𝑣 − ̇𝜶𝑣) − ̃ 𝜖𝑣̇̂ 𝜖𝑣 (25)
+where ̆𝒗𝑒 = 𝒗𝑒 − 𝜷𝑣 = [̆ 𝑣1, ̆ 𝑣2, ̆ 𝑣3]𝖳 is the ﬁltered velocity tracking error and the virtual controller 𝜶𝑣 is designed as
+𝜶𝑣 = −𝑘1𝝃𝑒 −𝑘2sig1−𝑝(𝝃𝑒) −𝑘3sig1+𝑝(𝝃𝑒) (26)
+where 𝑘1,𝑘 2 and 𝑘3 are positive constants to be determined.
+Substituting (26) into (25), one obtain
+̇𝑉1 =𝝃𝖳𝑒 ̆𝒗𝑒 + 𝝃𝖳𝑒 𝜸𝑣 −𝑘1𝝃𝖳𝑒 𝝃𝑒 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
++ 𝜸𝖳𝑣𝜏( ̇𝜷𝑣 − ̇𝜶𝑣) − ̃ 𝜖𝑣̇̂ 𝜖𝑣
+≤ − (𝑘1 − 1)𝝃2𝑒 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
++ 𝜸𝖳𝑣𝜏 ̇𝜷𝑣 +𝜏𝜖𝑣‖𝜸𝖳𝑣 ‖ − ̃ 𝜖𝑣̇̂ 𝜖𝑣 + 12 ‖̆𝒗𝑒‖2 + 12 ‖𝜸𝑣‖2
+(27)
+Substituting (22) and (23) into (27) and using the following property of the tanh(⋅) function
+0 ≤ |𝜛| −𝜛 tanh
+(
+𝜛
+𝜎▿
+)
+≤𝑘▵𝜎▿ (28)
+where variable 𝜛 ∈ ℝ, and 𝑘▵ is a constant satisfying 𝑘▵ =𝑒−(𝑘▵+1), for instance, 𝑘▵ = 0.2785. Then, one has
+̇𝑉1 ≤ − (𝑘1 − 1)‖𝝃𝑒‖2 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
++𝜏𝜖𝑣‖𝜸𝖳𝑣 ‖ −𝑐1𝜸𝖳𝑣 𝜸𝑣 −𝑐2‖𝜸𝑣‖2−𝑝 −𝑐3‖𝜸𝑣‖2+𝑝 −𝜏𝜸𝖳𝑣 ̂ 𝜖𝑣 tanh
+( 𝜸𝑣
+𝜎𝑣
+)
++
+(
+2𝜋
+𝑝𝑇𝑐
++𝑐▵
+)
+̃ 𝜖𝑣̂ 𝜖𝑣 +𝑐4̃ 𝜖𝑣̂ 𝜖1+𝑝𝑣 − ̃ 𝜖𝑣𝜏𝜸𝖳𝑣 tanh
+( 𝜸𝑣
+𝜎𝑣
+)
++ 12 ‖̆𝒗𝑒‖2
+≤ − (𝑘1 − 1)‖𝝃𝑒‖2 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
+−𝑐1‖𝜸𝑣‖2 −𝑐2‖𝜸𝑣‖2−𝑝 −𝑐3‖𝜸𝑣‖2+𝑝 + 2𝜋𝑝𝑇𝑐 ̃ 𝜖𝑣̂ 𝜖𝑣 +𝑐▵̃ 𝜖𝑣̂ 𝜖𝑣 +𝑐4̃ 𝜖𝑣̂ 𝜖1+𝑝𝑣
++𝜏𝑘▵𝜎𝑣𝜖𝑣 + 12 ‖̆𝒗𝑒‖2
+(29)
+Utilizing the Young’s inequality, one has
+̃ 𝜖𝑣̂ 𝜖𝑣 = ̃ 𝜖𝑣(𝜖𝑣 − ̃ 𝜖𝑣) ≤ − 12̃ 𝜖2𝑣 + 12𝜖2𝑣 (30)
+By invoking Lemmas 4 and 5, one has
+̃ 𝜖̂ 𝜖1+𝑝 = ̃ 𝜖(𝜖 − ̃ 𝜖)1+𝑝 ≤ 1 +𝑝2 +𝑝 (𝜖2+𝑝 − ̃ 𝜖2+𝑝). (31)
+Journal of the Franklin Institute 363 (2026) 108381 
+9 
+=== page 10
+Y. Wang et al.
+Substituting (30) and (31) into (29), it follows that
+̇𝑉1 ≤ − (𝑘1 − 1)‖𝝃𝑒‖2 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
+−𝑐1‖𝜸𝑣‖2 −𝑐2‖𝜸𝑣‖2−𝑝 −𝑐3‖𝜸𝑣‖2+𝑝 − 𝜋𝑝𝑇𝑐 ̃ 𝜖2𝑣 + 𝜋𝑝𝑇𝑐𝜖2𝑣
+− 𝑐▵
+2 ̃ 𝜖2𝑣 + 𝑐▵2 𝜖2𝑣 + 𝑐4(1 +𝑝)2 +𝑝 𝜖2+𝑝𝑣 − 𝑐4(1 +𝑝)2 +𝑝 ̃ 𝜖2+𝑝𝑣 +𝜏𝑘▵𝜎𝑣𝜖𝑣 + 12 ‖̆𝒗𝑒‖2
+(32)
+Based on Lemma 2, one has
+𝑐▵
+(
+̃ 𝜖2𝑣
+2
+)1−𝑝2
+≤𝑐▵
+̃ 𝜖2𝑣
+2 +𝑐▵
+𝑝
+2
+( 2 −𝑝
+2
+) 2−𝑝
+𝑝
+. (33)
+From (32) and (33), the time derivative of 𝑉1 is obtained as
+̇𝑉1 ≤ − (𝑘1 − 1)‖𝝃𝑒‖2 −𝑘221−𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1−𝑝∕2
+−𝑘321+𝑝∕2
+( 1
+2 ‖𝝃𝑒‖2
+)1+𝑝∕2
+− 𝑐1
+𝜏 𝜏𝜸𝖳𝑣 𝜸𝑣 −𝑐2
+( 2
+𝜏
+)1−𝑝∕2(𝜏
+2 𝜸𝖳𝑣 𝜸𝑣
+)1−𝑝∕2
+−𝑐3
+( 2
+𝜏
+)1+𝑝∕2(𝜏
+2 𝜸𝖳𝑣 𝜸𝑣
+)1+𝑝∕2
+− 𝜋𝑝𝑇𝑐 ̃ 𝜖2𝑣 − 21+𝑝∕2𝑐4(1 +𝑝)2 +𝑝 (̃ 𝜖𝑣2 )1+𝑝∕2 −𝑐▵(̃ 𝜖2𝑣2 )1−𝑝2 + 12 ‖̆𝒗𝑒‖2 +𝜚1
+(34)
+where 𝜚1 = 𝜋𝑝𝑇𝑐𝜖2𝑣 + 𝑐▵2 𝜖2𝑣 +𝑐▵𝑝2 ( 2−𝑝2 ) 2−𝑝𝑝 + 𝑐4(1+𝑝)2+𝑝 𝜖2+𝑝𝑣 +𝜏𝑘▵𝜎𝑣𝜖𝑣.
+Choosing the parameters as 𝑘1 = 3𝜋2𝑝𝑇𝑐 + 1,𝑘 2 = 𝜋𝑝𝑇𝑐
+(
+1
+2
+)1−𝑝2
+,𝑘 3 = 𝜋𝑝𝑇𝑐 3𝑝2 2𝑝( 12 )1+𝑝2,𝑐 1 = 𝜋𝜏𝑝𝑇𝑐,𝑐 2 = 𝜋𝑝𝑇𝑐 (𝜏2 )1−𝑝2,𝑐 3 = 𝜋𝑝𝑇𝑐 3𝑝2 (𝜏2 )1+𝑝2,𝑐 4 =
+𝜋
+𝑝𝑇𝑐
+2+𝑝
+1+𝑝 3
+𝑝
+2 2𝑝
+(
+1
+2
+)1+𝑝2
+, and 𝑐▵ = 𝜋𝑝𝑇𝑐 , then, by recalling (34) and Lemma 3 one obtain
+̇𝑉1 ≤ − 𝜋𝑝𝑇𝑐 (2𝑉1 +𝑉 1−𝑝∕21 + 2𝑝2𝑉 1+𝑝∕21 ) + 12 ‖̆𝒗𝑒‖2 +𝜚1 (35)
+Remark 5. By constructing an adaptive predeﬁned-time ﬁlter (22), the proposed strategy eﬀectively addresses the “explosion of 
+complexity” issue while ensuring predeﬁned-time convergence of the ﬁlter error. The ﬁlter’s design, which utilizes a smooth contin-
+uous function, inherently mitigates chattering and facilitates rigorous Lyapunov-based stability analysis. It is worth noting that the 
+integration of the predeﬁned-time stability framework with super-twisting algorithm [39] constitutes a promising direction for future 
+research, potentially oﬀering further reﬁnements in robustness and performance. 
+Step 2: According to Eq. (10), the dynamics of the ﬁltered velocity error ̆𝒗𝑒 can be expressed as:
+̇̆𝒗𝑒 = 𝑭𝑝 + 𝒖𝑝 + Δ𝑭𝑚 + 𝑻𝑑 − ̇𝜷𝑣. (36)
+The UDT Δ𝑭𝑚(⋅) = [Δ𝐹𝑚(1), Δ𝐹𝑚(2), Δ𝐹𝑚(3)]𝖳 in Eq. (36) can be approximated by using the RBF-NNs as
+Δ𝑭𝑚(𝑖) = 𝑾 𝖳𝑝𝑖 𝑮𝑝𝑖 +𝜗𝑝𝑖, 𝑖= 1, 2, 3 (37)
+where 𝑾𝑝𝑖 ∈ ℝ3×1 denotes the NNs weight vector, 𝑮𝑝𝑖 represents the RBF vector, 𝜗𝑝𝑖 denotes the approximation error and there exits 
+a positive constant 𝜗𝑝𝑚 satisfying |𝜗𝑝𝑖|<𝜗 𝑝𝑚.
+To ensure precise position tracking, an adaptive predeﬁned-time controller is designed as follows
+𝒖𝑝 = −𝜅1̆𝒗𝑒 −𝜅2sig(̆𝒗𝑒)1−𝑝 −𝜅3sig(̆𝒗𝑒)1+𝑝 − ̂Π𝑝Φ𝑝̆𝒗𝑒
+2𝑔21 − 𝑭𝑝 + ̇𝜷𝑣 (38)
+where 𝜅1,𝜅 2,𝜅 3 are positive design constants, 𝑔1 > 0, Π𝑝 = max{‖𝑾𝑝1‖2, ‖𝑾𝑝2‖2, ‖𝑾𝑝3‖2}, ̂Π𝑝 is the estimation of Π𝑝, ̃Π𝑝 = Π𝑝 − ̂Π𝑝, 
+and Φ𝑝 = diag{𝑮𝖳𝑝1𝑮𝑝1, 𝑮𝖳𝑝2𝑮𝑝2, 𝑮𝖳𝑝3𝑮𝑝3}. The adaptive law of ̂Π𝑝 is designed as
+̇̂Π𝑝 = 𝑔2
+∑︁3
+𝑖=1 ̆ 𝑣2𝑖 𝑮𝖳𝑝𝑖𝑮𝑝𝑖
+2𝑔21 −
+(
+2𝜋
+𝑝𝑇𝑐
++𝑏▵
+)
+̂Π𝑝 −𝑏4̂Π1+𝑝𝑝 (39)
+where 𝑔2 > 0 and 𝑏▵,𝑏 4 > 0 are positive design parameter.
+Choose the Lyapunov candidate function as
+𝑉2 = 12 ̆𝒗𝖳𝑒 ̆𝒗𝑒 + 12𝑔2 ̃Π2𝑝. (40)
+Diﬀerentiating Eq. (40), one obtain (See Appendix: Derivation of Lyapunov function 𝑉2 for details)
+̇𝑉2 ≤ − 𝜋𝑝𝑇𝑐 (2𝑉2 +𝑉 1−𝑝∕22 + 2𝑝2𝑉 1+𝑝∕22 ) − 12 ̆𝒗𝖳𝑒 ̆𝒗𝑒 +𝜚3. (41)
+Journal of the Franklin Institute 363 (2026) 108381 
+10 
+=== page 11
+Y. Wang et al.
+4.2.2.  Stability analysis of outer loop
+Theorem 2. Consider the system dynamics given in Eqs. (10) and (36) under Assumptions 1-2. With the position tracking controller (38), 
+predeﬁned-time ﬁlter (22), virtual controller (26), and adaptive update laws (23) and (39), all closed-loop signals col(𝝃𝑒, 𝜸𝑣,̃ 𝜖𝑣, ̆𝒗𝑒) in the 
+position subsystem are guaranteed to be PPTS. 
+Proof.  For the position loop subsystem, consider the composite Lyapunov function candidate as 𝑉𝑝 =𝑉1 +𝑉2. From the expressions
+(35) and (41), the time derivative of 𝑉𝑝 is obtained as
+̇𝑉𝑝 ≤ − 𝜋𝑝𝑇𝑐 (2𝑉1 +𝑉 1−𝑝∕21 + 2𝑝2𝑉 1+𝑝∕21 ) + 12 ̆𝒗𝖳𝑒 ̆𝒗𝑒 +𝜚1
+− 𝜋𝑝𝑇𝑐 (2𝑉2 +𝑉 1−𝑝∕22 + 2𝑝2𝑉 1+𝑝∕22 ) − 12 ̆𝒗𝖳𝑒 ̆𝒗𝑒 +𝜚3
+≤ − 𝜋𝑝𝑇𝑐 (2𝑉𝑝 +𝑉 1−𝑝∕2𝑝 +𝑉 1+𝑝∕2𝑝 ) +𝜚𝑝
+(42)
+where 𝜚𝑝 =𝜚1 +𝜚3.
+According to Theorem 1, it implies that the origin of position subsystem is PPTS and all states signals col(𝝃𝑒, 𝜸𝑣,̃ 𝜖𝑣, ̆𝒗𝑒) will converge 
+into the region as
+Ω = lim
+𝑡→𝑇𝑝
+𝑉𝑝 ∣𝑉𝑝 ≤ min
+⎧
+⎪
+⎨
+⎪⎩
+( 𝜚𝑝𝑝𝑇𝑐
+(1 −𝜍)𝜋
+) 2
+2−𝑝
+,
+( 𝜚𝑝𝑝𝑇𝑐
+(1 −𝜍)𝜋
+) 2
+2+𝑝
+⎫
+⎪
+⎬
+⎪⎭
+(43)
+around zero within a predeﬁned time 𝑇𝑝 satisfying 𝑇𝑝 ≤
+√𝜍
+𝜍 𝑇𝑐. Furthermore, the boundedness of 𝝃𝑒, 𝜸𝑣 and ̆𝒗𝑒, along with the smooth-
+ness of the virtual control law Eq. (26) and the deﬁnition of 𝜸𝑣 and ̆𝒗𝑒, guarantees that the velocity tracking error 𝒗𝑒 and the virtual 
+control signal 𝜶𝑣 and its time derivative ̇𝜶𝑣 are bounded are bounded in predeﬁned time 𝑇𝑝. This rigorously justiﬁes the structure and 
+feasibility of the adaptive law (23).  
+4.3.  Attitude tracking control (Inner-loop)
+The design of the inner-loop attitude controller, while structurally analogous to the outer loop, is emphasized here due to its 
+critical role in the cascaded system stability. The attitude references are generated directly by the position controller via the nonlin-
+ear transformation in Eq. (11). Therefore, precise attitude tracking is essential to ensure the thrust vector aligns with the position 
+controller’s intent. The following design rigorously establishes a faster predeﬁned-time convergence for the attitude loop, enforcing 
+the time-scale separation principle and enabling the overall system’s stability analysis.
+4.3.1.  Predeﬁned-time attitude controller design
+Deﬁne the ﬁltered angular velocity tracking error as ̆𝝎𝑒 = ̇𝜼𝑒 − 𝜷𝜔 = [̆ 𝜔1, ̆ 𝜔2, ̆ 𝜔3]𝖳, where 𝜶𝜔 is the virtual controller designed as
+𝜶𝜔 = −̄𝑘1𝜼𝑒 −̄𝑘2sig1−̄ 𝑝(𝜼𝑒) −̄𝑘3sig1+̄ 𝑝(𝜼𝑒). (44)
+Correspondingly, the command ﬁlter is designed as
+𝜏 ̇𝜷𝜔 = −
+(
+̄ 𝑐1 + 12 )𝜸𝜔 − ̄ 𝑐2sig1−̄ 𝑝(𝜸𝜔) − ̄ 𝑐3sig1+̄ 𝑝(𝜸𝜔) −𝜏̂ 𝜖𝜔 tanh ( 𝜸𝜔𝜎𝜔 ) (45)
+where 𝜷𝜔 is the ﬁltered signal of 𝜶𝜔, 𝜸𝜔 = 𝜷𝜔 − 𝜶𝜔 denotes the ﬁltered error, 𝜖𝜔 ≥ ‖̇𝜶𝜔‖, ̂ 𝜖𝜔 is the estimation of 𝜖𝜔, and ̃ 𝜖𝜔 =𝜖𝜔 − ̂ 𝜖𝜔. 
+The adaptive law of ̂ 𝜖𝜔 is designed as
+̇̂ 𝜖𝜔 = −
+(
+2𝜋
+̄ 𝑝̄𝑇𝑐 + ̄ 𝑐▵
+)
+̂ 𝜖𝜔 − ̄ 𝑐4̂ 𝜖1+̄ 𝑝𝜔 +𝜏𝜸𝖳𝜔𝜏̂ 𝜖𝜔 tanh
+( 𝜸𝜔
+𝜎𝜔
+)
+. (46)
+The parameters in Eqs. (44)–(46) are chosen as ̄𝑘1 = 𝜋̄ 𝑝̄𝑇𝑐 + 1, ̄𝑘2 = 𝜋̄ 𝑝̄𝑇𝑐
+(
+1
+2
+)1− ̄ 𝑝2
+, ̄𝑘3 = 𝜋̄ 𝑝̄𝑇𝑐 3 ̄ 𝑝2 2̄ 𝑝( 12 )1+ ̄ 𝑝2 , ̄ 𝑐1 = 𝜋𝜏̄ 𝑝̄𝑇𝑐 , ̄ 𝑐2 = 𝜋̄ 𝑝̄𝑇𝑐 (𝜏2 )1− ̄ 𝑝2 , 
+̄ 𝑐3 = 𝜋̄ 𝑝̄𝑇𝑐 3 ̄ 𝑝2 (𝜏2 )1+ ̄ 𝑝2 , ̄ 𝑐4 = 𝜋̄ 𝑝̄𝑇𝑐 2+̄ 𝑝1+̄ 𝑝3 ̄ 𝑝2 2̄ 𝑝( 12 )1+ ̄ 𝑝2  and ̄ 𝑐▵ = 𝜋̄ 𝑝̄𝑇𝑐 .
+Step 1. Select the Lyapunov candidate function 𝑉3 = 12 𝜼𝖳𝑒 𝜼𝑒 + 𝜏2 𝜸𝖳𝜔𝜸𝜔 + 12̃ 𝜖2𝜔, and the derivative of 𝑉3 can be derived as
+̇𝑉3 ≤ − 𝜋̄ 𝑝̄𝑇𝑐 (2𝑉3 +𝑉 1−̄ 𝑝∕23 + 2 ̄ 𝑝2𝑉 1+̄ 𝑝∕23 ) + 12 ‖̆𝝎𝑒‖2 + ̄ 𝜚1 (47)
+where ̄ 𝜚1 = 𝜋̄ 𝑝̄𝑇𝑐𝜖2𝜔 + ̄ 𝑐▵2 𝜖2𝜔 + ̄ 𝑐▵ ̄ 𝑝2 ( 2−̄ 𝑝2 ) 2−̄ 𝑝̄ 𝑝+ ̄ 𝑐4(1+̄ 𝑝)2+̄ 𝑝𝜖2+̄ 𝑝𝜔 +𝜏̄𝑏▵𝜎𝜔𝜖𝜔.
+Step 2. According to Eq. (12), the dynamics of the ﬁltered angular velocity error ̆𝝎𝑒 can be established as
+̇̆𝝎𝑒 = 𝑭𝑎 + 𝑹𝑟𝑱 −1𝝉𝑞 + Δ ̄𝑭𝐽 + ̄𝝉𝑑 − ̇𝜷𝜔. (48)
+Journal of the Franklin Institute 363 (2026) 108381 
+11 
+=== page 12
+Y. Wang et al.
+The UDT Δ𝑭𝐽 (⋅) = [Δ𝐹𝐽 (1), Δ𝐹𝐽 (2), Δ𝐹𝐽 (3)]𝖳 can be approximated by using the RBF-NNs, i.e.,
+Δ𝑭𝐽 (𝑖) = 𝑾 𝖳𝑎𝑖 𝑮𝑎𝑖 +𝜗𝑎𝑖, 𝑖= 1, 2, 3 (49)
+where 𝜗𝑎𝑖 denotes the approximation error and there exits a positive constant 𝜗𝑎𝑚 satisfying |𝜗𝑎𝑖|<𝜗 𝑎𝑚.
+Accordingly, the adaptive predeﬁned-time controller for attitude tracking is designed as
+𝝉𝑞 = −𝑱 𝑹−1𝑟
+[
+̄ 𝜅1̆𝝎𝑒 + ̄ 𝜅2sig(̆𝝎𝑒)1−̄ 𝑝+ ̄ 𝜅3sig(̆𝝎𝑒)1+̄ 𝑝+ ̂Π𝑎Φ𝑎̆𝝎𝑒
+2̄ 𝑔21 + 𝑭𝑎 − ̇𝜷𝜔
+]
+(50)
+The adaptive law of ̂Π𝑎 is designed as
+̇̂Π𝑎 = ̄ 𝑔2
+∑︁3
+𝑖=1 ̆ 𝜔2𝑖 𝑮𝖳𝑎𝑖𝑮𝑎𝑖
+2̄ 𝑔21 −
+(
+2𝜋
+̄ 𝑝̄𝑇𝑐 +̄𝑏▵
+)
+̂Π𝑎 −̄𝑏4̂Π1+̄ 𝑝𝑎 . (51)
+The parameters in Eqs. (50) and (51) are set as ̄ 𝜅1 = 𝜋̄ 𝑝̄𝑇𝑐 + 12 , ̄ 𝜅2 = 𝜋̄ 𝑝̄𝑇𝑐
+(
+1
+2
+)1− ̄ 𝑝2
+, ̄ 𝜅3 = 𝜋̄ 𝑝̄𝑇𝑐 2̄ 𝑝
+(
+1
+2
+)1+ ̄ 𝑝2
+, ̄𝑏4 = 𝜋̄ 𝑝̄𝑇𝑐 2+̄ 𝑝(1+̄ 𝑝)̄ 𝑔122 2̄ 𝑝
+(
+1
+2
+)1+ ̄ 𝑝2
+ and 
+̄𝑏▵ = 𝜋̄ 𝑝̄𝑇𝑐 .
+Selecting the Lyapunov candidate function as 𝑉4 = 12 ̆𝝎𝖳𝑒 ̆𝝎𝑒 + 12̄ 𝑔2 ̃Π2𝑎, one can obtain
+̇𝑉4 ≤ − 𝜋̄ 𝑝̄𝑇𝑐 (2𝑉4 +𝑉 1−̄ 𝑝∕24 + 2 ̄ 𝑝2𝑉 1+̄ 𝑝∕24 ) − 12 ̆𝝎𝖳𝑒 ̆𝝎𝑒 + ̄ 𝜚3 (52)
+where ̄ 𝜚3 = ̄ 𝜚2 + 𝜋̄ 𝑝̄ 𝑔2̄𝑇𝑐 Π2𝑎 + ̄𝑏▵2̄ 𝑔2 Π2𝑎 +̄𝑏▵ ̄ 𝑝2 ( 2−̄ 𝑝2 ) 2−̄ 𝑝̄ 𝑝+ ̄𝑏4(1+̄ 𝑝)̄ 𝑔2(2+̄ 𝑝) Π2+̄ 𝑝𝑎  and ̄ 𝜚2 = 3̄ 𝑔212 + 3𝜗2𝑎𝑚2 + 𝑑2𝑛2 .
+4.3.2.  Stability analysis of inner loop
+Theorem 3. Consider the system dynamics given in Eqs. (12) and (48) under Assumptions 1-2. With the attitude tracking controller (50), 
+predeﬁned-time ﬁlter (45), virtual controller (44) and update laws (46), (51), all closed-loop signals col(𝜼𝑒, 𝜸𝜔,̃ 𝜖𝜔, ̆𝝎𝑒) in the attitude subsystem 
+are guaranteed to be PPTS. 
+Proof.  The proof is omitted here.  
+Remark 6. The following points should be emphasized as: (i) From (42) and (43), one can ﬁnd that the minimum UBCT time of the 
+position subsystem and attitude subsystem can be explicitly preset by regulating the design parameter 𝑇𝑐 and ̄𝑇𝑐 , respectively. The 
+reduction of 𝑇𝑐 or ̄𝑇𝑐 results in a shorter convergence time and a smaller residual set. While, the decrease of 𝑇𝑐 or ̄𝑇𝑐 will bring about an 
+increase in control input according to (38) or (50), respectively. Therefore, the parameters 𝑇𝑐 and ̄𝑇𝑐 should be selected appropriately 
+to make a balance between the control burden and convergence region. (ii) For the ASL mission, 𝑇𝑐 of the predeﬁned-time controller 
+is a critical parameter. It is selected to be strictly less than the duration of the predicted safe landing window, i.e., 𝑇𝑐 < Δ𝑡. This 
+ensures that the tracking errors converge to the residual set, and the landing maneuver is completed, before the expiration of the 
+predicted period of deck stability. (iii) In practical engineering, the attitude control loop must exhibit faster convergence speed than 
+the position loop. This requirement can be easily satisﬁed by setting ̄𝑇𝑐 <𝑇 𝑐 .
+5.  Simulation examples
+In this section, we ﬁrst validate the forecast precision of LSTM-based prediction technique to provide a safe time interval for 
+quadrotor ASL, and then the eﬀectiveness and superiority of the developed neuroadaptive predeﬁned-time control (NAPTC) strategy 
+are veriﬁed. All parameters used in simulation are given as follows.
+The marine environment simulation employs the wave energy spectrum model from [10], with environmental parameters con-
+ﬁgured to wind speed 10.5 m∕s , signiﬁcant wave height 3.2 m , wavelength 125 m , and mean period 8.7 s . The USV’s deck motion 
+characteristics are then derived through numerical solution of the vessel’s kinematic equations.
+For the quadrotor system (1)–(4), the mass of the quadrotor is set as 𝑚 = 10kg and the inertial moment matrix is set as 
+𝑱 = diag(0.43, 0.43, 0.36)kg ⋅ m2. Initially, the error dynamics (10) and (12) of the quadrodor are given as 𝝃𝑒(0) = [5, −5, 4]𝖳m, 𝒗𝑒(0) =
+[0.15, −0.1, 0.15]𝖳m∕s, 𝜼𝑒(0) = [0.6, −0.5, 0.8]𝖳rad and 𝝎𝑒(0) = [−0.1, −0.1, 0.1]𝖳rad∕s. The unmodeled dynamics are supposed as Δ𝑭𝑚 =
+diag(2𝑠0.1𝑡,𝑠 0.2𝑡, 3𝑐0.1𝑡)m∕s2 and Δ𝑭𝐽 = diag(2𝑐0.1𝑡,𝑠 0.2𝑡, 3𝑐0.1𝑡)N ⋅ m. Besides, the external disturbances are assumed as 𝑻𝑑 = [0.5(5 +
+7𝑠0.15𝑡), 0.5(8 − 2𝑐0.15𝑡), 0.5(−10 + 5𝑠0.2𝑡)]𝖳m∕s2 and 𝝉𝑑 = [0.5(−10 + 6𝑠0.15𝑡), 0.5(7 − 3𝑐0.2𝑡), 0.5(3 + 6𝑠0.15𝑡)]𝖳N ⋅ m.
+For the NAPTC strategy, the control parameters are selected as 𝑝 = 0.3, ̄ 𝑝= 0.3,𝜏 = 1,𝑔 1 = 1, ̄ 𝑔1 = 1,𝑔 2 = 0.5, ̄ 𝑔2 = 0.5.
+5.1.  LSTM-based deck motion prediction
+To verify the eﬀectiveness of LSTM in deck motion prediction, this section compares the prediction performance of LSTM and AR 
+models [6]. We compare actual analysis data against LSTM network and AR models predictions for both roll and pitch dynamics. 
+The dataset comprises 2500 samples collected over 500 s at a 5 Hz  sampling frequency, capturing the roll and pitch movements 
+characteristics of the USV. The LSTM network consists of a single layer with 50 hidden units, processing 10-time-step input sequences. 
+Journal of the Franklin Institute 363 (2026) 108381 
+12 
+=== page 13
+Y. Wang et al.
+Fig. 4. Roll movements prediction results under proposed LSTM and AR models [6].
+A dropout rate of 0.1 is applied for regularization. The model is trained using Adam optimizer with initial learning rate of 0.005 and 
+piecewise decay. The AR model is implemented as a 5th-order autoregressive process with parameters estimated using Yule-Walker 
+method. Both models are trained on the ﬁrst 70% of data and evaluated on the remaining 30% using root mean square error (RMSE) 
+and mean absolute error (MAE) metrics.
+Based on the comparative analysis presented in Figs. 4 and 5, the proposed LSTM model demonstrates superior prediction accuracy 
+for both roll and pitch motions compared to the conventional AR models. For roll motion prediction, the LSTM achieves an RMSE 
+of 0.0371◦ and MAE of 0.0259◦, signiﬁcantly lower than the AR model’s RMSE of 0.0448◦ and MAE of 0.0354◦. Similarly consistent 
+performance enhancement is observed for pitch motion prediction, where the LSTM achieves an RMSE of 0.0264◦ and MAE of 0.0207◦, 
+signiﬁcantly lower than the AR model’s RMSE of 0.0450◦ and MAE of 0.0363◦. The comprehensive results validate LSTM’s enhanced 
+capability in capturing the complex nonlinear dynamics of ship motions in maritime environments and its eﬀectiveness for maritime 
+motion forecasting in ASL applications. Using the phase condition parameters established in Deﬁnition 1 and these prediction results, 
+we can accurately identify the ASL phase initiation timing.
+Fig. 6 presents the landing window analysis based on the landing conditions in Deﬁnition 1. The angular thresholds are set to 0.5◦
+for roll and 0.3◦ for pitch. Fig. 6(a) and (b) demonstrate the roll and pitch stability analysis, where the moving averages remain within 
+the stability thresholds during identiﬁed landing phases, indicating periods of minimal deck oscillation. Fig. 6(c) and (d) show the 
+variation analysis, with both roll and pitch variations consistently staying below the variation threshold of ̄𝜙 = ̄𝜃 = 0.22◦ throughout 
+these windows. As can be found in Fig. 6, the landing window Δ𝑡 had a duration of 98 sample points (from sample 388 to 485). Given 
+Journal of the Franklin Institute 363 (2026) 108381 
+13 
+=== page 14
+Y. Wang et al.
+Fig. 5. Pitch movements prediction results under proposed LSTM and AR models [6].
+our system data rate of 5 Hz , this corresponds to a physical time window of Δ𝑡 = 98∕5 s = 19 .6 s . Accordingly, the predeﬁned-time 
+parameter 𝑇𝑐 for the controller will be selected to be strictly less than 19.6 s to adhere to the 𝑇𝑐 < Δ𝑡 rule, guaranteeing that the 
+landing maneuver completes within the identiﬁed stable periods before the vessel enters subsequent unstable motion phases.
+Furthermore, to comprehensively address the robustness of the LSTM-based landing window predictor, we conduct additional 
+simulations under varied marine conditions. For this validation, we speciﬁcally select the following two sea states for simulation.
+• Sea state 3: signiﬁcant wave height 0.9 m and mean period 6.5 s.
+• Sea state 5: signiﬁcant wave height 3.3 m and mean period 9.5 s.
+Fig. 7 shows the prediction results of the proposed LSTM networks for roll and pitch motions under the two diﬀerent sea states. 
+The model demonstrates high accuracy, with low RMSE values observed across all scenarios. Speciﬁcally, for sea State 3, the RMSE 
+is 0.0312◦ for roll and 0.0266◦ for pitch, while under the more challenging sea state 5, it remains robust at 0.0320◦ for roll and 0.0443◦
+for pitch. The close alignment between predicted and actual trajectories, even as motion amplitudes increase signiﬁcantly, conﬁrms 
+the model’s robustness across varying sea conditions. This performance validates the reliability of the LSTM predictor in accurately 
+identifying stable windows for triggering autonomous landing commands.
+Journal of the Franklin Institute 363 (2026) 108381 
+14 
+=== page 15
+Y. Wang et al.
+Fig. 6. Landing window analysis.
+Fig. 7. Prediction results under diﬀerent sea state using proposed LSTM networks.
+Journal of the Franklin Institute 363 (2026) 108381 
+15 
+=== page 16
+Y. Wang et al.
+Fig. 8. Position tracking error responses.
+Fig. 9. Attitude tracking error responses.
+5.2.  Performances of proposed controller
+In this section, to verify the predeﬁned-time tracking performance of the proposed NAPTC strategy, two groups values of 
+predeﬁned-time design parameters are chosen as 𝑇𝑐 = 15 s,𝑇𝑐 = 10 s  and ̄𝑇𝑐 = 12 s, ̄𝑇𝑐 = 8 s  for outer loop and inner loop, respec-
+tively.
+The simulation results demonstrating the performance of the proposed NAPTC strategy are presented in Figs. 8–10. Fig. 8(a) 
+and (b) display the position tracking error responses 𝝃𝑒 for 𝑇𝑐 = 15 s  and 𝑇𝑐 = 10 s , respectively. In Fig. 8(a) and (b), the actual 
+convergence time is 7.5 s and 5.5 s, respectively, which are all shorter than the predeﬁned-time parameters 𝑇𝑐 . The attitude tracking 
+errors responses 𝜼𝑒 for ̄𝑇𝑐 = 12 s and 𝑇𝑐 and ̄𝑇𝑐 are shown in Fig. 9(a) and (b), respectively. For the attitude tracking error, one can 
+see that the actual convergence time is 5.5 s and 4 s, respectively, which are also shorter than the predeﬁned time design parameters 
+̄𝑇𝑐. By observing Figs. 8 and 9, it is shown that the smaller values of the parameters 𝑇𝑐 and ̄𝑇𝑐 can enhance the convergence rate of 
+the position and attitude tracking errors, respectively. Besides, by setting ̄𝑇𝑐 <𝑇 𝑐 , the convergence rate of attitude subsystem is faster 
+than position subsystem. As given in Fig. 10(a) and (b), the control inputs of the quadrotor become bigger when regulating 𝑇𝑐 and ̄𝑇𝑐
+from 15 s and 12 s to 10 s and 8 s. From Figs. 8–10, one can conclude that the UBCT of the tracking error can be accurately preset by 
+adjusting one design parameter 𝑇𝑐(̄𝑇𝑐 ), and when choosing the value of parameter 𝑇𝑐 (̄𝑇𝑐 ), a trade-oﬀ is required to be made between 
+the control burden and convergence rate.
+Furthermore, to evaluate the robustness of the proposed control strategy, we expand our simulation studies to include scenarios 
+with stronger disturbances. In this situation, the external disturbances are chosen as 𝑻𝑑 = [3.5(5 + 7𝑠0.15𝑡), 3.5(8 − 2𝑐0.15𝑡), 3.5(−10 +
+5𝑠0.2𝑡)]𝖳m∕s2 and 𝝉𝑑 = [3.5(−10 + 6𝑠0.15𝑡), 3.5(7 − 3𝑐0.2𝑡), 3.5(3 + 6𝑠0.15𝑡)]𝖳N ⋅ m, which is 7 times higher than above simulation scenario. 
+From Fig. 11, one can see that the position and attitude tracking errors converge to a small neighborhood of zero within the predeﬁned 
+Journal of the Franklin Institute 363 (2026) 108381 
+16 
+=== page 17
+Y. Wang et al.
+Fig. 10. Control inputs of the quadrotor.
+Fig. 11. Responses under stronger disturbances with 𝑇𝑐 = 10 s, ̄𝑇𝑐 = 8 s .
+Table 1 
+Comparison of control performance.
+Control scheme IAE ITAE Settling time
+𝑥𝑒 𝑦𝑒 𝑧𝑒 𝜙𝑒 𝜃𝑒 𝜓𝑒 𝑥𝑒 𝑦𝑒 𝑧𝑒 𝜙𝑒 𝜃𝑒 𝜓𝑒 position loop attitude loop
+Proposed 2.81 3.93 2.48 0.48 0.36 0.46 3.44 2.62 5.25 0.72 0.78 1.43 5.5 s 4 s
+Fixed-time [22] 7.44 6.55 9.29 1.01 1.39 1.77 23.01 16.55 70.53 3.82 8.46 7.50 8 s 7.5 s
+Finite-time [20] 9.03 8.82 7.97 0.86 1.38 1.43 18.12 17.98 24.11 1.43 7.22 6.66 10 s 10 s
+time. This convergence behavior clearly validates the robustness and precise tracking capability of the proposed controller despite 
+the presence of intensiﬁed external disturbances. In order to show the superiority of the NAPTC strategy, the ﬁxed-time controller 
+[22] and ﬁnite-time controller [20] are applied for the comparative analysis. It can be seen from Figs. 12-13 that the position tracking 
+convergence time of the ﬁxed-time strategy and ﬁnite-time strategy are 8 s and 10 s, respectively, while the settling time for attitude 
+tacking under these two method are 7.5 s and 10 s . It is evident that the convergence time of ﬁxed-time controller [22] and ﬁnite-
+time controller [20] are both higher than the proposed NAPTC control method. Additionally, to show the comparative results more 
+clearly and quantitatively, the performance comparisons of these schemes are provided in Table 1. IAE is the integrated absolute error 
+(deﬁned as ∫ 𝑡0 |𝑒(𝜏)| d𝜏 ) and ITAE represents the integrated absolute error (deﬁned as ∫ 𝑡0 𝑡|𝑒(𝜏)| d𝜏 ). The IAE and and ITAE metrics 
+are introduced to evaluate the transient performance and the steady-state performance of these methods. Therefore, the proposed 
+control strategy has been validated to achieve the control objective and provide a better performance as well.
+Journal of the Franklin Institute 363 (2026) 108381 
+17 
+=== page 18
+Y. Wang et al.
+Fig. 12. Responses under ﬁxed-time controller [22].
+Fig. 13. Responses under ﬁnite-time controller [20].
+6.  Conclusion
+This work proposes a comprehensive framework for quadrotor ASL, integrating a LSTM-based deck motion prediction method 
+with a neuroadaptive predeﬁned-time control scheme to ensure reliable landing onto a oscillating USV. The LSTM network is adopted 
+ﬁrstly to determine a safe time interval for ASL. Next, a neuroadaptive PPTS strategy for position and attitude tracking control is 
+proposed by incorporating RBF-NNs into the command ﬁlter backstepping procedure. Theoretical analysis demonstrates that under 
+the developed scheme, the overall closed-loop system is PPTS. The tracking errors converge to a small neighborhood around zero 
+within predeﬁned time and all the signals in the closed-loop system are bounded, simultaneously. Finally, simulation results validate 
+that the ASL mission of the quadrotor is successfully completed by the developed deck motion predictor and control design.
+This article dose have limitations. Existing constraints (i.e., physical input and visibility) and a robustness analysis considering 
+LSTM prediction errors are closely related to the security of the ASL, which should be taken seriously and investigated in future work.
+CRediT authorship contribution statement
+Yu Wang: Writing - original draft, Methodology, Formal analysis, Conceptualization; Huiliao Yang: Writing - original draft, Data 
+curation; Dawei Wu: Validation, Software; Yuquan Chen: Writing - review & editing, Supervision, Conceptualization.
+Journal of the Franklin Institute 363 (2026) 108381 
+18 
+=== page 19
+Y. Wang et al.
+Declaration of competing interest
+The authors declare that they have no known competing ﬁnancial interests or personal relationships that could have appeared to 
+inﬂuence the work reported in this paper.
+Acknowledgement
+This work is supported by the Basic Research Program of Jiangsu under Grant BK20240349. 
+Appendix A.  Proof of Lemma 5
+Proof.  The proof is established by contradiction. Assume, for the sake of contradiction, that the conclusion is false. Then there exists 
+a ﬁrst time 𝑡1 >𝑡 0 such that Θ(𝑡1) = 0 and 𝜂(𝑡)< 0 for 𝑡 ∈ (𝑡1,𝑡 1 +𝛿) for some 𝛿 >0 (i.e., the trajectory becomes negative immediately 
+after 𝑡1).
+Since 𝑡1 is the ﬁrst time the trajectory becomes zero, we have Θ(𝑡) ≥ 0 for all 𝑡 ∈ [𝑡0,𝑡 1]. Now, let’s examine the derivative of Θ at 
+time 𝑡1.
+At 𝑡 =𝑡1, we have Θ(𝑡1) = 0 . Substituting this into the diﬀerential equation:
+̇Θ(𝑡1) = −𝑏1 ⋅ 0 −𝑏2 ⋅ 0𝑠 +𝑏3Ψ(𝑡1) = 𝑏3Ψ(𝑡1)
+Given that 𝑏3Ψ(𝑡1) ≥ 0 by the problem’s condition, it follows that:
+̇Θ(𝑡1) ≥ 0
+This non-negative derivative means that at the moment Θ(𝑡) reaches zero, its instantaneous rate of change is pointing upwards (or at 
+least not downwards). This contradicts our initial assumption that Θ(𝑡) becomes negative immediately after 𝑡1. If ̇Θ(𝑡1) ≥ 0, then for 
+a small enough interval after 𝑡1, the function Θ(𝑡) must remain non-negative.
+Therefore, our initial assumption that such a time 𝑡1 exists must be false. Consequently, the trajectory Θ(𝑡) can never cross from 
+non-negative values into negative values. Since the initial condition is Θ(𝑡0) ≥ 0, we conclude that Θ(𝑡) ≥ 0 for all 𝑡 ≥𝑡0.  
+Appendix B.  Derivation of Lyapunov function 𝑽𝟐
+Diﬀerentiating Eq. (40) yields
+̇𝑉2 =̆𝒗𝑒̇̆𝒗𝑒 − 1𝑔2 ̃Π𝑝 ̇̂Π𝑝 (B.1)
+According to Eqs. (36) and (38), there is
+̇𝑉2 =̆𝒗𝑒(𝑭𝑝 + 𝒖𝑝 + Δ𝑭𝑚 + 𝑻𝑑 − ̇𝜷𝑣) − 1𝑔2 ̃Π𝑝 ̇̂Π𝑝
+=̆𝒗𝑒Δ𝑭𝑚 −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
+−
+̂Π𝑝Φ𝑝̆𝒗𝖳𝑒 ̆𝒗𝑒
+2𝑔21 + ̆𝒗𝑒𝑻𝑑 − 1𝑔2 ̃Π𝑝 ̇̂Π𝑝
+(B.2)
+By applying Young’s inequality, the following inequalities hold
+̆𝒗𝑒Δ𝑭𝑚 ≤
+3∑︂
+𝑖=1
+̆ 𝑣2𝑖 𝑾 𝖳𝑝𝑖 𝑮𝑝𝑖 +
+3∑︂
+𝑖=1
+̆ 𝑣𝑖𝜗𝑝𝑚
+≤
+Π𝑝
+∑︁3
+𝑖=1 ̆ 𝑣2𝑖 𝑮𝖳𝑝𝑖𝑮𝑝𝑖
+2𝑔21 +
+3𝑔21
+2 + ‖̆𝒗𝑒‖22 + 3𝜗2𝑝𝑚2 (B.3)
+and
+̆𝒗𝑒𝑻𝑑 ≤ ‖̆𝒗𝑒‖22 + 𝑑2𝑚2 . (B.4)
+Journal of the Franklin Institute 363 (2026) 108381 
+19 
+=== page 20
+Y. Wang et al.
+Substituting (B.3) and Eqs. (B.4) into (B.2), one can obtain
+̇𝑉2 ≤ −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
++
+3𝑔21
+2
++
+Π𝑝
+∑︁3
+𝑖=1 ̆ 𝑣2𝑖 𝑮𝖳𝑝𝑖𝑮𝑝𝑖
+2𝑔21 +
+3𝜗2𝑝𝑚
+2 + ‖̆𝒗𝑒‖2 − ̂Π𝑝Φ𝑝̆𝒗𝖳𝑒 ̆𝒗𝑒2𝑔21 + 𝑑2𝑚2 − 1𝑔2 ̃Π𝑝 ̇̂Π𝑝
+≤ − (𝜅1 − 1)‖̆𝒗𝑒‖2 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
++
+(Π𝑝 − ̂Π𝑝) ∑︁3𝑖=1 ̆ 𝑣2𝑖 𝑮𝖳𝑝𝑖𝑮𝑝𝑖
+2𝑔21 +𝜚2 − 1𝑔2 ̃Π𝑝 ̇̂Π𝑝
+(B.5)
+where 𝜚2 =
+3𝑔21
+2 +
+3𝜗2𝑝𝑚
+2 +
+𝑑2𝑚
+2 .
+Substituting Eqs. (39) into (B.5) yields
+̇𝑉2 ≤ −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
++ ̃Π𝑝
+⎛
+⎜
+⎜⎝
+∑︁3
+𝑖=1 ̆ 𝑣2𝑖 𝑮𝖳𝑝𝑖𝑮𝑝𝑖
+2ℎ2 − 1𝑔2 ̇̂Π𝑝
+⎞
+⎟
+⎟⎠ +𝜚2
+≤ −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
++ 𝑏4
+𝑔2
+̃Π𝑝̂Π1+𝑝𝑝 +
+(
+2𝜋
+𝑝𝑔2𝑇𝑐
++ 𝑏▵
+𝑔2
+)
+̃Π𝑝̂Π𝑝 +𝜚2
+(B.6)
+Utilizing the Young’s inequality, one has
+̃Π𝑝̂Π𝑝 = ̃Π𝑝(Π𝑝 − ̃Π𝑝) ≤ − 12 ̃Π2𝑝 + 12 Π2𝑝 (B.7)
+By invoking Lemmas 4 and 5, one has
+̃Π𝑝̂Π1+𝑝𝑝 = ̃Π𝑝(Π𝑝 − ̃Π𝑝)1+𝑝 ≤ 1 +𝑝2 +𝑝 (Π2+𝑝𝑝 − ̃Π2+𝑝𝑝 ). (B.8)
+Substituting (B.7) and (B.8) into (B.6), it follows that
+̇𝑉2 ≤ −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
+− 𝜋𝑝𝑔2𝑇𝑐 ̃Π2𝑝
++ 3𝜋2𝑝𝑔2𝑇𝑐 Π2𝑝 − 𝑏▵2𝑔2 ̃Π2𝑝 + 𝑏▵2𝑔2 Π2𝑝 + 𝑏4(1 +𝑝)𝑔2(2 +𝑝) Π2+𝑝𝑝 − 𝑏4(1 +𝑝)𝑔2(2 +𝑝) ̃Π2+𝑝𝑝 +𝜚2
+(B.9)
+Based on Lemma 2, one has
+𝑏▵
+( ̃Π2𝑝
+2𝑔2
+)1−𝑝2
+≤𝑏▵
+̃Π2𝑝
+2𝑔2
++𝑏▵
+𝑝
+2
+( 2 −𝑝
+2
+) 2−𝑝
+𝑝
+. (B.10)
+From (B.9) and (B.10), the time derivative of 𝑉2 is obtained as
+̇𝑉2 ≤ −𝜅1̆𝒗𝖳𝑒 ̆𝒗𝑒 −𝜅221−𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1−𝑝∕2
+−𝜅321+𝑝∕2
+( 1
+2 ‖̆𝒗𝑒‖2
+)1+𝑝∕2
+− 𝜋𝑝𝑇𝑐 1𝑔2 ̃Π2𝑝 − 21+𝑝∕2𝑏4𝑔𝑝∕22 (1 +𝑝)2 +𝑝 ( ̃Π2𝑝2𝑔2 )1+𝑝∕2 −𝑏▵( ̃Π2𝑝2𝑔2 )1−𝑝2 +𝜚3 (B.11)
+where 𝜚3 =𝜚2 + 𝜋𝑝𝑔2𝑇𝑐 Π2𝑝 + 𝑏▵2𝑔2 Π2𝑝 +𝑏▵𝑝2 ( 2−𝑝2 ) 2−𝑝𝑝 + 𝑏4(1+𝑝)𝑔2(2+𝑝) Π2+𝑝𝑝 .
+Choosing 𝜅1 = 𝜋𝑝𝑇𝑐 + 12 , 𝜅2 = 𝜋𝑝𝑇𝑐
+(
+1
+2
+)1−𝑝2
+, 𝜅3 = 𝜋𝑝𝑇𝑐 2𝑝
+(
+1
+2
+)1+𝑝2
+, 𝑏4 = 𝜋𝑝𝑇𝑐 2+𝑝(1+𝑝)𝑔 122 2𝑝
+(
+1
+2
+)1+𝑝2
+ and 𝑏▵ = 𝜋𝑝𝑇𝑐 , then, by recalling Eq. (B.11) 
+and Lemma 3 one obtain
+̇𝑉2 ≤ − 𝜋𝑝𝑇𝑐 (2𝑉2 +𝑉 1−𝑝∕22 + 2𝑝2𝑉 1+𝑝∕22 ) − 12 ̆𝒗𝖳𝑒 ̆𝒗𝑒 +𝜚3 (B.12)
+References
+[1] H.-T. Zhang, B. Hu, Z. Xu, Z.-j. Cai, B. Liu, X. Wang, T. Geng, S. Zhong, J. Zhao, Visual navigation and landing control of an unmanned aerial vehicle on a moving 
+autonomous surface vehicle via adaptive learning, IEEE Trans. Neural Netw. Learn. Syst. 32 (12) (2021) 5345–5355.
+Journal of the Franklin Institute 363 (2026) 108381 
+20 
+=== page 21
+Y. Wang et al.
+[2] C. Zhang, T. Song, H. Tao, T. Jiang, Flight envelope constrained UAV shipboard landing control within an identiﬁed quiescent period, Chin. J. Aeronaut. 38 (8) 
+(2025) 103463.
+[3] I. Tunney, J. Bass, A. Lussier Desbiens, Friction shock absorbers and reverse thrust for fast multirotor landing on high-speed vehicles, J. Field Robot. (2025) 
+1–23. https://doi.org/10.1002/rob.70069
+[4] E. Tian, Y. Li, Y. Liao, J. Cao, UAV-USV docking control system based on motion compensation deck and attitude prediction, Ocean Eng. 307 (2024) 118223.
+[5] R. Xu, C. Liu, Z. Cao, Y. Wang, H. Qian, A manipulator-assisted multiple UAV landing system for USV subject to disturbance, Ocean Eng. 299 (2024) 117306.
+[6] Y. Huang, M. Zhu, Z. Zheng, K.H. Low, Linear velocity-free visual servoing control for unmanned helicopter landing on a ship with visibility constraint, IEEE 
+Trans. Syst., Man, Cybern., Syst. 52 (5) (2022) 2979–2993.
+[7] R. Polvara, S. Sharma, J. Wan, A. Manning, R. Sutton, Vision-based autonomous landing of a quadrotor on the perturbed deck of an unmanned surface vehicle, 
+Drones 2 (2018) 15.
+[8] P. Moriarty, R. Sheehy, P. Doody, Neural networks to aid the autonomous landing of a UAV on a ship, in: 2017 28th Irish Signals and Systems Conference (ISSC), 
+2017, pp. 1–4.
+[9] X. Zhang, D. He, F. Liao, Iterative model predictive control for automatic carrier landing of carrier-based aircrafts under complex surroundings and constraints, 
+J. Shanghai Jiaotong Univ. (Sci.) 29 (2024) 712–724.
+[10] Q. Lu, B. Ren, S. Parameswaran, Shipboard landing control enabled by an uncertainty and disturbance estimator, J. Guid, Control, Dyn. 41 (7) (2018) 1502–1520.
+[11] W. Li, Y. Ge, Z. Guan, H. Gao, H. Feng, NMPC-based UAV-USV cooperative tracking and landing, J. Franklin Inst. 360 (11) (2023) 7481–7500.
+[12] L. Sun, Y. Huang, Z. Zheng, B. Zhu, J. Jiang, Adaptive nonlinear relative motion control of quadrotors in autonomous shipboard landings, J. Franklin Inst. 357 
+(18) (2020) 13569–13592.
+[13] K. Xia, S. Lee, H. Son, Adaptive control for multi-rotor UAVs autonomous ship landing with mission planning, Aerosp. Sci. Technol. 96 (2020) 105549.
+[14] H. Jabbari, Robust vision-based tracking control of VTOL unmanned aerial vehicles, Automatica 107 (2019) 425–432.
+[15] C.K. Tan, J. Wang, Y.C. Paw, F. Liao, Autonomous ship deck landing of a quadrotor using invariant ellipsoid method, IEEE Trans. Aerosp. Electron. Syst. 52 (2) 
+(2016) 891–903.
+[16] Y. Yuan, H. Duan, Adaptive learning control for a quadrotor unmanned aerial vehicle landing on a moving ship, IEEE Trans. Ind. Inform. 20 (1) (2024) 534–545.
+[17] C.P. Bechlioulis, G.A. Rovithakis, Adaptive control with guaranteed transient and steady state tracking error bounds for strict feedback systems, Automatica 45 
+(2) (2009) 532–538.
+[18] Y. Yuan, H. Duan, Z. Zeng, Prescribed performance evolution control for quadrotor autonomous shipboard landing, IEEE/CAA J. Autom. Sin. 11 (5) (2024) 
+1151–1162.
+[19] J. Hu, Y. Wu, S. Su, Flexible prescribed performance tracking control for receiver UAV with actuator faults and constraints, J. Franklin Inst. 362 (16) (2025) 
+108033.
+[20] A. Arif, H. Wang, H. Castañeda, Y. Wang, Finite-time tracking of moving platform with single camera for quadrotor autonomous landing, IEEE Trans. Circuits 
+Syst. I, Reg. Pap. 70 (6) (2023) 2573–2586.
+[21] Y. Huang, M. Zhu, Z. Zheng, M. Feroskhan, Fixed-time autonomous shipboard landing control of a helicopter with external disturbances, Aerosp. Sci. Technol. 
+84 (2019) 18–30.
+[22] Y. Huang, M. Zhu, Z. Zheng, Output-constrained ﬁxed-time control for autonomous ship landing of helicopters, ISA Trans. 106 (2020) 221–232.
+[23] H. Gao, J. Wang, Y. Xia, J. Zhang, B. Cui, Fixed-time neuroadaptive backstepping tracking control for uncertain nonlinear systems with predictor based learning, 
+IEEE Trans. Autom. Sci. Eng. 22 (2025) 3147–3159.
+[24] Y. Zhang, M. Chadli, Z. Xiang, Predeﬁned-time adaptive fuzzy control for a class of nonlinear systems with output hysteresis, IEEE Trans. Fuzzy Syst. 31 (8) 
+(2023) 2522–2531.
+[25] J.D. Sánchez-Torres, J.D. Sánchez-Torres, D. Gómez-Gutiérrez, E. López, A.G. Loukianov, A class of predeﬁned-time stable dynamical systems, IMA J. Math. 
+Control Inf. 35 (1) (2018) 1–29.
+[26] T. Jiang, Y. Yan, S. Yu, T. Li, H. Sang, Event-triggered based predeﬁned-time tracking control for robotic manipulators with state and input quantization, 
+Nonlinear Dyn. 112 (2024) 19169–19183.
+[27] S. Xie, Q. Chen, X. He, Predeﬁned-time approximation-free attitude constraint control of rigid spacecraft, IEEE Trans. Aerosp. Electron. Syst. 59 (1) (2023) 
+347–358.
+[28] S. Yang, Y. Pan, L. Cao, L. Chen, Predeﬁned-time fault-tolerant consensus tracking control for multi-UAV systems with prescribed performance and attitude 
+constraints, IEEE Trans. Aerosp. Electron. Syst. 60 (2024) 4058–4072.
+[29] M. Zhang, H. Zang, L. Bai, A new predeﬁned-time sliding mode control scheme for synchronizing chaotic systems, Chaos Soliton. Fract. 164 (2022) 112745.
+[30] Q. Wang, J. Cao, H. Liu, Adaptive fuzzy control of nonlinear systems with predeﬁned time and accuracy, IEEE Trans. Fuzzy Syst. 30 (12) (2022) 5152–5165.
+[31] S. Xie, Q. Chen, Q. Yang, Adaptive fuzzy predeﬁned-time dynamic surface control for attitude tracking of spacecraft with state constraints, IEEE Trans. Fuzzy 
+Syst. 31 (7) (2023) 2292–2304.
+[32] Y. Liu, X. Chen, Y. Wu, H. Cai, H. Yokoi, Adaptive neural network control of a ﬂexible spacecraft subject to input nonlinearity and asymmetric output constraint, 
+IEEE Trans. Neural Netw. Learn. Syst. 33 (11) (2022) 6226–6234.
+[33] Y.-J. Liu, W. Zhao, L. Liu, D. Li, S. Tong, C.L.P. Chen, Adaptive neural network control for a class of nonlinear systems with function constraints on states, IEEE 
+Trans. Neural Netw. Learn. Syst. 34 (6) (2023) 2732–2741.
+[34] F. Zhang, B. Huang, P. Huang, Adaptive predeﬁned-time dual channel event-triggered deployment control of triangle space tethered system, IEEE Trans. Aerosp. 
+Electron. Syst. 61 (2) (2025) 4796–4807.
+[35] D. Swaroop, J.K. Hedrick, P.P. Yip, J.C. Gerdes, Dynamic surface control for a class of nonlinear systems, IEEE Trans. Autom. Control 45 (10) (2000) 1893–1899.
+[36] F. Song, R. Yang, Adaptive predeﬁned-time fuzzy control based on command ﬁltering for uncertain time-delay nonlinear systems, J. Franklin Inst. 362 (12) 
+(2025) 107771.
+[37] S. Khantsis, Control System Design Using Evolutionary Algorithms for Autonomous Shipboard Recovery of Unmanned Aerial Vehicles, Ph.D. thesis, Royal 
+Melbourne Institute of Technology, 2006.
+[38] A.J. Munozvazquez, J.D. Sancheztorres, E. Jimenezrodriguez, A.G. Loukianov, Predeﬁned-time robust stabilization of robotic manipulators, IEEE/ASME Trans. 
+Mechatron. 24 (3) (2019) 1033–1040.
+[39] X. Qin, Z. Zhao, P. Huang, J. Li, Multiple feedback recurrent neural network based super-twisting predeﬁned-time nonsingular terminal sliding mode control for 
+quad-rotor UAV, Aerosp. Sci. Technol. 151 (2024) 109282.
+Journal of the Franklin Institute 363 (2026) 108381 
+21 

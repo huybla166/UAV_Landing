@@ -1,0 +1,9 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  tirex ctx=150 run noWing_headQ done (195s)
+  tirex ctx=150 run noWing_followQ done (377s)
+  tirex ctx=150 run wing_headQ done (567s)
+  tirex ctx=150 run wing_followQ done (756s)
+  tirex ctx=300 run noWing_headQ done (188s)
+  tirex ctx=300 run noWing_followQ done (378s)
+  tirex ctx=300 run wing_headQ done (563s)
+  tirex ctx=300 run wing_followQ done (740s)

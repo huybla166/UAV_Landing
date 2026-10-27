@@ -1,0 +1,22 @@
+# Data: kept local, not pushed
+data/
+dataset_v2_zalo/
+**/runs/
+*.zip
+*.csv
+*.npz
+*.mat
+
+# Root-level planning docs and slides: kept local
+/*.md
+!/README.md
+/slides_data.html
+
+# Copyrighted reference papers
+references/
+*.pdf
+
+# Python / tool caches
+__pycache__/
+*.pyc
+.pytest_cache/

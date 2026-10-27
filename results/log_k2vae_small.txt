@@ -1,0 +1,33 @@
+    noWing_headQ epoch 1: val 2.6447 (best 2.6447) [5s]
+    noWing_headQ epoch 2: val 2.8571 (best 2.6447) [10s]
+    noWing_headQ epoch 3: val 3.0922 (best 2.6447) [15s]
+    noWing_headQ epoch 4: val 3.2973 (best 2.6447) [21s]
+    noWing_headQ epoch 5: val 3.5444 (best 2.6447) [26s]
+    noWing_headQ epoch 6: val 3.8491 (best 2.6447) [31s]
+    noWing_headQ epoch 7: val 3.9468 (best 2.6447) [37s]
+  fold noWing_headQ done
+    noWing_followQ epoch 1: val 2.9922 (best 2.9922) [5s]
+    noWing_followQ epoch 2: val 3.1470 (best 2.9922) [10s]
+    noWing_followQ epoch 3: val 3.4428 (best 2.9922) [16s]
+    noWing_followQ epoch 4: val 3.6243 (best 2.9922) [21s]
+    noWing_followQ epoch 5: val 4.1545 (best 2.9922) [26s]
+    noWing_followQ epoch 6: val 4.1880 (best 2.9922) [31s]
+    noWing_followQ epoch 7: val 4.7099 (best 2.9922) [37s]
+  fold noWing_followQ done
+    wing_headQ epoch 1: val 2.9519 (best 2.9519) [5s]
+    wing_headQ epoch 2: val 3.1268 (best 2.9519) [11s]
+    wing_headQ epoch 3: val 3.2587 (best 2.9519) [16s]
+    wing_headQ epoch 4: val 3.4040 (best 2.9519) [21s]
+    wing_headQ epoch 5: val 3.4844 (best 2.9519) [27s]
+    wing_headQ epoch 6: val 3.6738 (best 2.9519) [33s]
+    wing_headQ epoch 7: val 3.8281 (best 2.9519) [40s]
+  fold wing_headQ done
+    wing_followQ epoch 1: val 2.5999 (best 2.5999) [6s]
+    wing_followQ epoch 2: val 2.7818 (best 2.5999) [13s]
+    wing_followQ epoch 3: val 3.0167 (best 2.5999) [18s]
+    wing_followQ epoch 4: val 3.1814 (best 2.5999) [24s]
+    wing_followQ epoch 5: val 3.8212 (best 2.5999) [29s]
+    wing_followQ epoch 6: val 4.0191 (best 2.5999) [35s]
+    wing_followQ epoch 7: val 4.0437 (best 2.5999) [40s]
+  fold wing_followQ done
+k2vae_small done

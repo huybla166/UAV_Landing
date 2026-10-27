@@ -1,0 +1,6 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+ft        | VAL pinball 0.3421 mse5 0.8270 | TEST nRMSE 1s [0.425 0.35  0.493] 2s [0.808 0.658 0.881] 5s [0.905 0.898 0.985] pinball0-5s [0.2268 0.2016 0.2424]
+ft_fredf  | VAL pinball 0.3420 mse5 0.8308 | TEST nRMSE 1s [0.434 0.365 0.492] 2s [0.813 0.672 0.89 ] 5s [0.908 0.894 0.974] pinball0-5s [0.2269 0.2024 0.2416]
+mv        | VAL pinball 0.3426 mse5 0.8526 | TEST nRMSE 1s [0.498 0.413 0.535] 2s [0.862 0.703 0.908] 5s [0.917 0.914 0.981] pinball0-5s [0.2347 0.2123 0.2439]
+mv_fredf  | VAL pinball 0.3429 mse5 0.8556 | TEST nRMSE 1s [0.495 0.438 0.532] 2s [0.851 0.711 0.901] 5s [0.916 0.911 0.98 ] pinball0-5s [0.2341 0.2148 0.2438]
+selected by validation pinball: ft_fredf

@@ -1,0 +1,83 @@
+{
+ "tirex_ctx300": {
+  "raw_band_coverage": 0.7704818325434439,
+  "mean_half_width_roll_pitch_5s": 0.5539742354208259,
+  "main_pooled": {
+   "declared": 0.36611374407582936,
+   "violation": 0.04739336492890995,
+   "fsr": 0.12944983818770225,
+   "recall": 0.6792929292929293,
+   "base": 0.46919431279620855,
+   "n": 844,
+   "n_declared": 309,
+   "n_false_safe": 40,
+   "joint_coverage": null
+  },
+  "main_heading_aci": {
+   "declared": 0.24289099526066352,
+   "violation": 0.04739336492890995,
+   "fsr": 0.1951219512195122,
+   "recall": 0.4166666666666667,
+   "max_run_violation": 0.05687203791469194,
+   "runs_over_alpha": 2
+  },
+  "grid_pooled_recall": 0.7127376915218469,
+  "grid_reg_recall": 0.5300757544819812,
+  "grid_reg_worst": 0.08056872037914692,
+  "grid_reg_mean_worst": 0.05924170616113744
+ },
+ "tirex_sp": {
+  "raw_band_coverage": 0.7693404423380726,
+  "mean_half_width_roll_pitch_5s": 0.5539742112159729,
+  "main_pooled": {
+   "declared": 0.36611374407582936,
+   "violation": 0.04739336492890995,
+   "fsr": 0.12944983818770225,
+   "recall": 0.6792929292929293,
+   "base": 0.46919431279620855,
+   "n": 844,
+   "n_declared": 309,
+   "n_false_safe": 40,
+   "joint_coverage": null
+  },
+  "main_heading_aci": {
+   "declared": 0.24289099526066352,
+   "violation": 0.04739336492890995,
+   "fsr": 0.1951219512195122,
+   "recall": 0.4166666666666667,
+   "max_run_violation": 0.05687203791469194,
+   "runs_over_alpha": 2
+  },
+  "grid_pooled_recall": 0.713090134121759,
+  "grid_reg_recall": 0.5287011882208438,
+  "grid_reg_worst": 0.07582938388625593,
+  "grid_reg_mean_worst": 0.05924170616113744
+ },
+ "tirex_ft": {
+  "raw_band_coverage": 0.7833293838862558,
+  "mean_half_width_roll_pitch_5s": 0.5594907402992249,
+  "main_pooled": {
+   "declared": 0.3459715639810427,
+   "violation": 0.0462085308056872,
+   "fsr": 0.13356164383561644,
+   "recall": 0.6388888888888888,
+   "base": 0.46919431279620855,
+   "n": 844,
+   "n_declared": 292,
+   "n_false_safe": 39,
+   "joint_coverage": null
+  },
+  "main_heading_aci": {
+   "declared": 0.28199052132701424,
+   "violation": 0.04739336492890995,
+   "fsr": 0.16806722689075632,
+   "recall": 0.5,
+   "max_run_violation": 0.052132701421800945,
+   "runs_over_alpha": 1
+  },
+  "grid_pooled_recall": 0.663398378335662,
+  "grid_reg_recall": 0.5270789962851372,
+  "grid_reg_worst": 0.06635071090047394,
+  "grid_reg_mean_worst": 0.05627962085308057
+ }
+}

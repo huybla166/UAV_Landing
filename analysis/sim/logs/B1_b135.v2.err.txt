@@ -1,0 +1,6 @@
+warning: It is recommended to use 1.25 <= w0 * sqrt(Hs) <= 1.75.
+warning: called from
+    waveDirectionalSpectrum at line 140 column 9
+    waveInitialization at line 84 column 2
+    verify_B_linear at line 94 column 13
+
