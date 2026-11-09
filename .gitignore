@@ -15,6 +15,7 @@ dataset_v2_zalo/
 # Copyrighted reference papers
 references/
 *.pdf
+analysis/sim/scratch_from_C/wang2026.txt
 
 # Python / tool caches
 __pycache__/
