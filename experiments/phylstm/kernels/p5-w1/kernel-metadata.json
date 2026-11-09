@@ -1,0 +1,18 @@
+{
+  "id": "wanghui1101/usv-phylstm-p5-w1",
+  "title": "USV PhyLSTM p5-w1",
+  "code_file": "phylstm_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "machine_shape": "NvidiaTeslaT4",
+  "dataset_sources": [
+    "wanghui1101/usv-dataset-v2-phylstm-v2"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [],
+  "model_sources": []
+}
